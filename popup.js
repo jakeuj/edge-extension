@@ -74,9 +74,18 @@ async function removeStorage(keys) {
 // API 設定相關函數
 async function loadApiSettings() {
     try {
-        const saved = await getStorage('apiSettings');
-        if (saved) {
-            apiSettings = { ...DEFAULT_API_SETTINGS, ...saved };
+        const result = await getStorage(['apiSettings']);
+        if (result.apiSettings) {
+            apiSettings = { ...DEFAULT_API_SETTINGS, ...result.apiSettings };
+        } else {
+            // 如果沒有儲存的設定，從 HTML 的預設值載入
+            if (elements.companyDomain && elements.loginApiUrl && elements.attendanceApiUrl) {
+                apiSettings = {
+                    companyDomain: elements.companyDomain.value || DEFAULT_API_SETTINGS.companyDomain,
+                    loginApiUrl: elements.loginApiUrl.value || DEFAULT_API_SETTINGS.loginApiUrl,
+                    attendanceApiUrl: elements.attendanceApiUrl.value || DEFAULT_API_SETTINGS.attendanceApiUrl
+                };
+            }
         }
         updateApiSettingsUI();
         updateUsernamePrefix();
