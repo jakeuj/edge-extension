@@ -1,0 +1,182 @@
+name: Release Edge Extension
+
+on:
+  push:
+    tags:
+      - 'v*'  # 觸發條件：推送版本標籤 (例如 v1.0.0)
+  workflow_dispatch:  # 允許手動觸發
+    inputs:
+      version:
+        description: '版本號 (例如: 1.0.1)'
+        required: true
+        type: string
+      release_notes:
+        description: '發布說明'
+        required: false
+        type: string
+        default: '新版本發布'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Get version from tag or input
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          VERSION="${{ github.event.inputs.version }}"
+        else
+          VERSION=${GITHUB_REF#refs/tags/v}
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+        
+    - name: Update manifest version
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        # 更新 manifest.json 中的版本號
+        sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" manifest.json
+        echo "Updated manifest.json version to $VERSION"
+        
+    - name: Generate icons (if needed)
+      run: |
+        # 檢查是否存在圖示檔案，如果不存在則建立預設圖示
+        mkdir -p icons
+        if [ ! -f "icons/icon16.png" ]; then
+          echo "Creating default icons..."
+          # 建立簡單的 SVG 圖示並轉換為 PNG
+          cat > icons/icon.svg << 'EOF'
+        <svg width="128" height="128" xmlns="http://www.w3.org/2000/svg">
+          <rect width="128" height="128" fill="#2563eb" rx="16"/>
+          <text x="64" y="75" font-family="Arial, sans-serif" font-size="48" fill="white" text-anchor="middle" font-weight="bold">技</text>
+        </svg>
+        EOF
+          
+          # 如果系統有 convert 命令（ImageMagick），則轉換 SVG 為 PNG
+          if command -v convert &> /dev/null; then
+            convert icons/icon.svg -resize 16x16 icons/icon16.png
+            convert icons/icon.svg -resize 32x32 icons/icon32.png
+            convert icons/icon.svg -resize 48x48 icons/icon48.png
+            convert icons/icon.svg -resize 128x128 icons/icon128.png
+            echo "Generated PNG icons from SVG"
+          else
+            echo "ImageMagick not available, skipping icon generation"
+          fi
+        fi
+        
+    - name: Create extension package
+      run: |
+        # 建立發布目錄
+        mkdir -p release
+        
+        # 複製必要檔案到發布目錄
+        cp manifest.json release/
+        cp popup.html release/
+        cp background.js release/
+        cp -r scripts release/
+        cp -r styles release/
+        
+        # 複製圖示檔案（如果存在）
+        if [ -d "icons" ] && [ "$(ls -A icons/*.png 2>/dev/null)" ]; then
+          cp -r icons release/
+          echo "Copied icon files"
+        fi
+        
+        # 建立 ZIP 檔案
+        cd release
+        zip -r "../gigabyte-attendance-tracker-v${{ steps.version.outputs.version }}.zip" .
+        cd ..
+        
+        echo "Created extension package: gigabyte-attendance-tracker-v${{ steps.version.outputs.version }}.zip"
+        
+    - name: Generate release notes
+      id: release_notes
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          NOTES="${{ github.event.inputs.release_notes }}"
+        else
+          # 從 git log 生成發布說明
+          NOTES=$(git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD 2>/dev/null || echo "- 新版本發布")
+        fi
+        
+        # 建立完整的發布說明
+        cat > release_notes.md << EOF
+        ## 🚀 技嘉出勤時間追蹤器 v${{ steps.version.outputs.version }}
+        
+        ### 📥 安裝方法
+        
+        1. 下載下方的 \`gigabyte-attendance-tracker-v${{ steps.version.outputs.version }}.zip\` 檔案
+        2. 解壓縮到本機資料夾
+        3. 開啟 Microsoft Edge，前往 \`edge://extensions/\`
+        4. 開啟「開發人員模式」
+        5. 點擊「載入解壓縮」並選擇解壓縮的資料夾
+        6. 開始使用！
+        
+        ### 📋 系統需求
+        
+        - Microsoft Edge 瀏覽器（最新版本）
+        - 技嘉 EIP 系統有效帳號
+        - 帳號格式：\`gigabyte\\your.username\`
+        
+        ### 🔄 更新說明
+        
+        $NOTES
+        
+        ### 📚 使用說明
+        
+        詳細使用說明請參考：[使用文件](https://edge.jakeuj.com)
+        
+        ### 🐛 問題回報
+        
+        如有問題請至 [Issues](https://github.com/jakeuj/edge-extension/issues) 回報
+        EOF
+        
+        echo "Generated release notes"
+        
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.tag }}
+        name: "技嘉出勤時間追蹤器 v${{ steps.version.outputs.version }}"
+        body_path: release_notes.md
+        files: |
+          gigabyte-attendance-tracker-v${{ steps.version.outputs.version }}.zip
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Update download link in index.html
+      run: |
+        # 更新 index.html 中的下載連結
+        VERSION="${{ steps.version.outputs.version }}"
+        DOWNLOAD_URL="https://github.com/jakeuj/edge-extension/releases/download/v${VERSION}/gigabyte-attendance-tracker-v${VERSION}.zip"
+        
+        # 更新下載按鈕的連結
+        sed -i "s|href=\"https://github.com/jakeuj/edge-extension/releases\"|href=\"$DOWNLOAD_URL\"|g" index.html
+        
+        echo "Updated download link in index.html"
+        
+    - name: Commit updated files
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add manifest.json index.html
+        git commit -m "chore: update version to v${{ steps.version.outputs.version }} and download link" || exit 0
+        git push origin HEAD:main || echo "No changes to push"
+        
+    - name: Summary
+      run: |
+        echo "✅ 發布完成！"
+        echo "📦 版本：v${{ steps.version.outputs.version }}"
+        echo "🔗 下載連結：https://github.com/jakeuj/edge-extension/releases/tag/v${{ steps.version.outputs.version }}"
+        echo "📄 發布頁面：https://github.com/jakeuj/edge-extension/releases"

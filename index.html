@@ -129,6 +129,38 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
+
+        .version-info {
+            margin: 15px 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .version-link {
+            display: inline-block;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 2px;
+            transition: all 0.3s;
+        }
+
+        .version-link:hover {
+            color: white;
+            border-bottom-color: white;
+        }
+
+        .update-info {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
         
         .code-block {
             background: #f4f4f4;
@@ -282,12 +314,14 @@
         <div class="download-section">
             <h2>📥 立即下載</h2>
             <p>開始使用技嘉出勤時間追蹤器，讓工作時間管理更輕鬆！</p>
-            <a href="https://github.com/jakeuj/edge-extension" class="download-btn" target="_blank">
-                📁 GitHub 專案頁面
-            </a>
+            <p class="version-info">目前版本：<strong>v1.0.0</strong></p>
             <a href="https://github.com/jakeuj/edge-extension/releases" class="download-btn" target="_blank">
                 ⬇️ 下載最新版本
             </a>
+            <a href="https://github.com/jakeuj/edge-extension" class="download-btn" target="_blank">
+                📁 GitHub 專案頁面
+            </a>
+            <a href="https://github.com/jakeuj/edge-extension/releases" class="version-link" target="_blank">📋 查看所有版本</a>
         </div>
 
         <footer class="footer">

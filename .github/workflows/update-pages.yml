@@ -1,0 +1,113 @@
+name: Update GitHub Pages
+
+on:
+  release:
+    types: [published]  # 當新 release 發布時觸發
+  workflow_dispatch:  # 允許手動觸發
+
+jobs:
+  update-pages:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Get latest release info
+      id: release
+      run: |
+        # 獲取最新 release 資訊
+        LATEST_RELEASE=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/latest")
+        VERSION=$(echo "$LATEST_RELEASE" | jq -r '.tag_name' | sed 's/^v//')
+        DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | jq -r '.assets[0].browser_download_url')
+        RELEASE_URL=$(echo "$LATEST_RELEASE" | jq -r '.html_url')
+        
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
+        echo "release_url=$RELEASE_URL" >> $GITHUB_OUTPUT
+        
+        echo "Latest version: $VERSION"
+        echo "Download URL: $DOWNLOAD_URL"
+        
+    - name: Update index.html with latest release info
+      run: |
+        VERSION="${{ steps.release.outputs.version }}"
+        DOWNLOAD_URL="${{ steps.release.outputs.download_url }}"
+        RELEASE_URL="${{ steps.release.outputs.release_url }}"
+        
+        # 更新版本號
+        sed -i "s/version \"[^\"]*\"/version \"$VERSION\"/g" index.html
+        
+        # 更新下載連結
+        sed -i "s|href=\"https://github.com/jakeuj/edge-extension/releases[^\"]*\"|href=\"$DOWNLOAD_URL\"|g" index.html
+        
+        # 更新 "查看所有版本" 連結
+        if ! grep -q "查看所有版本" index.html; then
+          # 如果沒有 "查看所有版本" 連結，在下載按鈕後添加
+          sed -i "s|</a>|</a>\n            <a href=\"$RELEASE_URL\" class=\"version-link\" target=\"_blank\">📋 查看所有版本</a>|g" index.html
+        else
+          sed -i "s|href=\"[^\"]*\" class=\"version-link\"|href=\"$RELEASE_URL\" class=\"version-link\"|g" index.html
+        fi
+        
+        echo "Updated index.html with version $VERSION"
+        
+    - name: Add version info and update timestamp
+      run: |
+        # 添加更新時間戳
+        TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S UTC')
+        
+        # 在 index.html 中添加或更新最後更新時間
+        if grep -q "最後更新" index.html; then
+          sed -i "s/最後更新：[^<]*/最後更新：$TIMESTAMP/g" index.html
+        else
+          # 如果沒有更新時間，在頁面底部添加
+          sed -i "s|</body>|    <div class=\"update-info\">最後更新：$TIMESTAMP</div>\n</body>|g" index.html
+        fi
+        
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        if git diff --quiet; then
+          echo "No changes to commit"
+        else
+          git add index.html
+          git commit -m "docs: update GitHub Pages with latest release v${{ steps.release.outputs.version }}"
+          git push origin main
+          echo "Pushed changes to main branch"
+        fi
+        
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: .
+        publish_branch: gh-pages
+        exclude_assets: |
+          .github
+          .gitignore
+          *.md
+          test/
+          tools/
+          scripts/
+          styles/
+          background.js
+          popup.html
+          manifest.json
+          *.json
+          *.http
+        
+    - name: Summary
+      run: |
+        echo "✅ GitHub Pages 更新完成！"
+        echo "🌐 網站：https://edge.jakeuj.com"
+        echo "📦 最新版本：v${{ steps.release.outputs.version }}"
+        echo "🔗 下載連結已更新"
