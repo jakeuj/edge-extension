@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>彈性上班下班時間計算器</title>
+    <meta name="description" content="智慧計算彈性上班制度的下班時間，支援 Microsoft Edge 擴充套件和網頁版使用">
+    <meta name="keywords" content="彈性上班,下班時間,計算器,Microsoft Edge,擴充套件">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="彈性上班下班時間計算器">
+    <meta property="og:description" content="智慧計算彈性上班制度的下班時間，支援 Microsoft Edge 擴充套件和網頁版使用">
+    <meta property="og:type" content="website">
+    
+    <link rel="stylesheet" href="popup.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        .download-section {
+            background: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .download-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .download-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .card-description {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #dee2e6;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
+        .web-app-section {
+            background: #f8f9fa;
+            padding: 40px 20px;
+        }
+        
+        .app-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .features-section {
+            background: white;
+            padding: 60px 20px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .feature-item {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .feature-description {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .github-link {
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .github-link:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .download-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">🕐 彈性上班下班時間計算器</h1>
+            <p class="hero-subtitle">智慧計算彈性上班制度的下班時間，支援 Microsoft Edge 擴充套件和網頁版使用</p>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="download-section">
+        <div class="container">
+            <h2>選擇使用方式</h2>
+            <div class="download-grid">
+                <div class="download-card">
+                    <div class="card-icon">🧩</div>
+                    <h3 class="card-title">Microsoft Edge 擴充套件</h3>
+                    <p class="card-description">
+                        安裝到瀏覽器，隨時查看下班時間。支援通知提醒、自動偵測上班時間等進階功能。
+                    </p>
+                    <a href="#extension-install" class="btn btn-primary">下載擴充套件</a>
+                </div>
+                
+                <div class="download-card">
+                    <div class="card-icon">🌐</div>
+                    <h3 class="card-title">網頁版</h3>
+                    <p class="card-description">
+                        直接在瀏覽器中使用，無需安裝。支援基本的時間計算和進度顯示功能。
+                    </p>
+                    <a href="#web-app" class="btn btn-secondary">立即使用</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Web App Section -->
+    <section class="web-app-section" id="web-app">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 30px;">🌐 網頁版計算器</h2>
+            <div class="app-container">
+                <!-- 嵌入 popup.html 的內容 -->
+                <div id="mainSection" class="section">
+                    <div class="header">
+                        <h2>下班時間計算</h2>
+                        <div id="currentTime" class="current-time">--:--:--</div>
+                        <div id="currentDate" class="current-date">----/--/--</div>
+                    </div>
+
+                    <div class="time-info">
+                        <div class="input-group">
+                            <label for="workStartTime">上班時間：</label>
+                            <input type="time" id="workStartTime" value="09:30">
+                            <button id="calculateBtn" class="btn btn-primary">計算下班時間</button>
+                        </div>
+
+                        <div class="time-display">
+                            <div class="time-item">
+                                <span class="label">預計下班：</span>
+                                <span id="endTime" class="time-value">--:--</span>
+                            </div>
+                            <div class="time-item">
+                                <span class="label">剩餘時間：</span>
+                                <span id="remainingTime" class="time-value">--:--:--</span>
+                            </div>
+                        </div>
+
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div id="progressFill" class="progress-fill"></div>
+                            </div>
+                            <div id="progressText" class="progress-text">0%</div>
+                        </div>
+                    </div>
+
+                    <div id="calculationStatus" class="status-message"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <h2 style="text-align: center;">✨ 主要功能</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">⏰</div>
+                    <h3 class="feature-title">彈性上班制度</h3>
+                    <p class="feature-description">
+                        支援 8:30-9:30 彈性上班時間，自動計算對應的下班時間
+                    </p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">即時進度顯示</h3>
+                    <p class="feature-description">
+                        視覺化進度條顯示工作進度，倒數計時到下班時間
+                    </p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🔔</div>
+                    <h3 class="feature-title">智慧通知</h3>
+                    <p class="feature-description">
+                        下班前 15 分鐘提醒，下班時間到達通知（擴充套件版）
+                    </p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">精準計算</h3>
+                    <p class="feature-description">
+                        8:30→17:45，9:30→18:45，中間時間線性計算
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Extension Install Section -->
+    <section class="download-section" id="extension-install">
+        <div class="container">
+            <h2>🧩 Microsoft Edge 擴充套件安裝</h2>
+            <div style="max-width: 600px; margin: 0 auto; text-align: left;">
+                <h3>安裝步驟：</h3>
+                <ol style="line-height: 2;">
+                    <li>下載擴充套件檔案：<a href="https://github.com/jakeuj/edge-extension/archive/main.zip" class="github-link">下載 ZIP 檔案</a></li>
+                    <li>解壓縮到任意資料夾</li>
+                    <li>開啟 Microsoft Edge 瀏覽器</li>
+                    <li>前往 <code>edge://extensions/</code></li>
+                    <li>啟用右上角的「開發者模式」</li>
+                    <li>點選「載入解壓縮」</li>
+                    <li>選擇解壓縮後的資料夾</li>
+                    <li>完成！點選工具列的時鐘圖示開始使用</li>
+                </ol>
+                
+                <h3>擴充套件專屬功能：</h3>
+                <ul style="line-height: 2;">
+                    <li>🔐 出勤系統整合（需要公司 API）</li>
+                    <li>🔔 桌面通知提醒</li>
+                    <li>💾 設定自動儲存</li>
+                    <li>🔄 自動重新整理</li>
+                    <li>📱 工具列快速存取</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>
+                開源專案 | 
+                <a href="https://github.com/jakeuj/edge-extension" class="github-link">GitHub 倉庫</a> | 
+                <a href="https://github.com/jakeuj/edge-extension/issues" class="github-link">回報問題</a>
+            </p>
+            <p style="margin-top: 20px; opacity: 0.8;">
+                © 2024 彈性上班下班時間計算器 | 使用 MIT 授權
+            </p>
+        </div>
+    </footer>
+
+    <!-- 載入 popup.js 的簡化版本 -->
+    <script src="web-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 背景圓形 -->
+  <circle cx="64" cy="64" r="60" fill="url(#gradient)" stroke="#2c3e50" stroke-width="4"/>
+  
+  <!-- 漸層定義 -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 時鐘外框 -->
+  <circle cx="64" cy="64" r="45" fill="white" stroke="#34495e" stroke-width="2"/>
+  
+  <!-- 時鐘刻度 -->
+  <g stroke="#34495e" stroke-width="2">
+    <!-- 12點 -->
+    <line x1="64" y1="24" x2="64" y2="30" stroke-width="3"/>
+    <!-- 3點 -->
+    <line x1="104" y1="64" x2="98" y2="64" stroke-width="3"/>
+    <!-- 6點 -->
+    <line x1="64" y1="104" x2="64" y2="98" stroke-width="3"/>
+    <!-- 9點 -->
+    <line x1="24" y1="64" x2="30" y2="64" stroke-width="3"/>
+    
+    <!-- 其他刻度 -->
+    <line x1="89.5" y1="38.5" x2="86.5" y2="41.5"/>
+    <line x1="89.5" y1="89.5" x2="86.5" y2="86.5"/>
+    <line x1="38.5" y1="89.5" x2="41.5" y2="86.5"/>
+    <line x1="38.5" y1="38.5" x2="41.5" y2="41.5"/>
+  </g>
+  
+  <!-- 時針指向5點 (下班時間) -->
+  <line x1="64" y1="64" x2="64" y2="45" stroke="#e74c3c" stroke-width="4" stroke-linecap="round"/>
+  <!-- 分針指向9點 (45分) -->
+  <line x1="64" y1="64" x2="40" y2="64" stroke="#e74c3c" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- 中心點 -->
+  <circle cx="64" cy="64" r="4" fill="#2c3e50"/>
+  
+  <!-- 下班圖示 -->
+  <g transform="translate(85, 85)">
+    <!-- 小人圖示 -->
+    <circle cx="8" cy="6" r="3" fill="#27ae60"/>
+    <rect x="5" y="9" width="6" height="8" rx="2" fill="#27ae60"/>
+    <line x1="5" y1="12" x2="2" y2="15" stroke="#27ae60" stroke-width="2" stroke-linecap="round"/>
+    <line x1="11" y1="12" x2="14" y2="15" stroke="#27ae60" stroke-width="2" stroke-linecap="round"/>
+    <line x1="8" y1="17" x2="8" y2="22" stroke="#27ae60" stroke-width="2" stroke-linecap="round"/>
+    <line x1="6" y1="22" x2="10" y2="22" stroke="#27ae60" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  
+  <!-- 文字 -->
+  <text x="64" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2c3e50">下班</text>
+</svg>
