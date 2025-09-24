@@ -980,6 +980,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     // 載入 API 設定
     await loadApiSettings();
 
+    // 載入應用程式設定
+    await loadSettings();
+
     // 載入儲存的帳號密碼
     await loadSavedCredentials();
 
@@ -990,8 +993,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupEventListeners();
 
     // 開始時間更新
-    updateTime();
-    setInterval(updateTime, 1000);
+    startTimeUpdate();
 });
 
 // 設定事件監聽器
@@ -1042,11 +1044,29 @@ function setupEventListeners() {
     }
 
     if (elements.autoDetectBtn) {
-        elements.autoDetectBtn.addEventListener('click', autoDetectWorkTime);
+        elements.autoDetectBtn.addEventListener('click', handleAutoDetect);
     }
 
     if (elements.testBtn) {
-        elements.testBtn.addEventListener('click', testApiConnection);
+        elements.testBtn.addEventListener('click', handleTestAPI);
+    }
+
+    // 其他控制按鈕
+    if (elements.refreshBtn) {
+        elements.refreshBtn.addEventListener('click', handleRefresh);
+    }
+
+    if (elements.settingsBtn) {
+        elements.settingsBtn.addEventListener('click', showSettings);
+    }
+
+    if (elements.backToMainBtn) {
+        elements.backToMainBtn.addEventListener('click', showMain);
+    }
+
+    // 設定變更
+    if (elements.autoRefresh) {
+        elements.autoRefresh.addEventListener('change', handleAutoRefreshChange);
     }
 
     // Enter 鍵登入
