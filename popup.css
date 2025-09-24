@@ -412,6 +412,73 @@ header h1 {
     height: 16px;
 }
 
+/* API 設定樣式 */
+.settings-toggle {
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.api-settings {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.api-settings.hidden {
+    display: none;
+}
+
+.api-settings .input-group {
+    margin-bottom: 12px;
+}
+
+.api-settings .input-group:last-child {
+    margin-bottom: 0;
+    display: flex;
+    gap: 10px;
+}
+
+.api-settings .input-group:last-child .btn {
+    flex: 1;
+    font-size: 14px;
+    padding: 8px 12px;
+}
+
+.api-settings label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.api-settings input[type="text"],
+.api-settings input[type="url"] {
+    font-size: 13px;
+    padding: 8px 12px;
+}
+
+.settings-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #28a745;
+    margin-left: 5px;
+    animation: pulse 2s infinite;
+}
+
+.settings-indicator.default {
+    background: #ffc107;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
 /* 響應式設計 */
 @media (max-width: 400px) {
     .container {

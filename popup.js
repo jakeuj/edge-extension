@@ -3,6 +3,16 @@ let currentServerKey = null;
 let refreshInterval = null;
 let userCredentials = null;
 
+// API 設定預設值
+const DEFAULT_API_SETTINGS = {
+    companyDomain: 'company',
+    loginApiUrl: 'https://your-company-api.com/api/auth/login',
+    attendanceApiUrl: 'https://your-company-api.com/api/getAttendanceInfo'
+};
+
+// 當前 API 設定
+let apiSettings = { ...DEFAULT_API_SETTINGS };
+
 // 通用儲存函數
 async function setStorage(data) {
     try {
@@ -61,6 +71,56 @@ async function removeStorage(keys) {
     }
 }
 
+// API 設定相關函數
+async function loadApiSettings() {
+    try {
+        const saved = await getStorage('apiSettings');
+        if (saved) {
+            apiSettings = { ...DEFAULT_API_SETTINGS, ...saved };
+        }
+        updateApiSettingsUI();
+        updateUsernamePrefix();
+    } catch (error) {
+        console.error('載入 API 設定失敗:', error);
+        apiSettings = { ...DEFAULT_API_SETTINGS };
+    }
+}
+
+async function saveApiSettings() {
+    try {
+        // 從 UI 讀取設定
+        apiSettings.companyDomain = elements.companyDomain.value.trim() || 'company';
+        apiSettings.loginApiUrl = elements.loginApiUrl.value.trim() || DEFAULT_API_SETTINGS.loginApiUrl;
+        apiSettings.attendanceApiUrl = elements.attendanceApiUrl.value.trim() || DEFAULT_API_SETTINGS.attendanceApiUrl;
+
+        await setStorage({ apiSettings });
+        showStatus(elements.loginStatus, '✅ API 設定已儲存', 'success');
+        updateUsernamePrefix();
+    } catch (error) {
+        console.error('儲存 API 設定失敗:', error);
+        showStatus(elements.loginStatus, '❌ 儲存失敗：' + error.message, 'error');
+    }
+}
+
+function updateApiSettingsUI() {
+    if (elements.companyDomain) elements.companyDomain.value = apiSettings.companyDomain;
+    if (elements.loginApiUrl) elements.loginApiUrl.value = apiSettings.loginApiUrl;
+    if (elements.attendanceApiUrl) elements.attendanceApiUrl.value = apiSettings.attendanceApiUrl;
+}
+
+function updateUsernamePrefix() {
+    if (elements.usernamePrefix) {
+        elements.usernamePrefix.textContent = `${apiSettings.companyDomain}\\`;
+    }
+}
+
+function resetApiSettings() {
+    apiSettings = { ...DEFAULT_API_SETTINGS };
+    updateApiSettingsUI();
+    updateUsernamePrefix();
+    showStatus(elements.loginStatus, '🔄 已重置為預設設定', 'success');
+}
+
 // DOM 元素
 const elements = {
     // 區域
@@ -76,6 +136,16 @@ const elements = {
     skipLoginBtn: document.getElementById('skipLoginBtn'),
     logoutBtn: document.getElementById('logoutBtn'),
     loginStatus: document.getElementById('loginStatus'),
+    usernamePrefix: document.getElementById('usernamePrefix'),
+
+    // API 設定相關
+    toggleApiSettings: document.getElementById('toggleApiSettings'),
+    apiSettingsSection: document.getElementById('apiSettingsSection'),
+    companyDomain: document.getElementById('companyDomain'),
+    loginApiUrl: document.getElementById('loginApiUrl'),
+    attendanceApiUrl: document.getElementById('attendanceApiUrl'),
+    saveApiSettings: document.getElementById('saveApiSettings'),
+    resetApiSettings: document.getElementById('resetApiSettings'),
     
     // 時間顯示
     currentTime: document.getElementById('currentTime'),
@@ -104,45 +174,7 @@ const elements = {
     showNotification: document.getElementById('showNotification')
 };
 
-// 初始化
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadSettings();
-    await loadSavedCredentials();
-    await checkLoginStatus();
-    setupEventListeners();
-    startTimeUpdate();
-});
-
-// 設定事件監聽器
-function setupEventListeners() {
-    elements.loginBtn.addEventListener('click', handleLogin);
-    elements.skipLoginBtn.addEventListener('click', handleSkipLogin);
-    elements.logoutBtn.addEventListener('click', handleLogout);
-    elements.autoDetectBtn.addEventListener('click', handleAutoDetect);
-    elements.refreshBtn.addEventListener('click', handleRefresh);
-    elements.testBtn.addEventListener('click', handleTestAPI);
-    elements.settingsBtn.addEventListener('click', showSettings);
-    elements.logoutBtn.addEventListener('click', handleLogout);
-    elements.backToMainBtn.addEventListener('click', showMain);
-    elements.workStartTime.addEventListener('change', calculateEndTime);
-    
-    // 設定變更
-    elements.autoRefresh.addEventListener('change', handleAutoRefreshChange);
-    elements.showNotification.addEventListener('change', saveSettings);
-    
-    // Enter 鍵登入
-    elements.username.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            handleLogin();
-        }
-    });
-
-    elements.password.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            handleLogin();
-        }
-    });
-}
+// 舊的事件監聽器已移除，使用新版本
 
 // 檢查登入狀態
 async function checkLoginStatus() {
@@ -212,7 +244,7 @@ async function handleLogin() {
     }
 
     // 組合完整帳號
-    const account = `company\\${username}`;
+    const account = `${apiSettings.companyDomain}\\${username}`;
 
     elements.loginBtn.disabled = true;
     elements.loginBtn.textContent = '登入中...';
@@ -401,7 +433,7 @@ async function loginToSystem(credentials) {
     console.log('登入請求內容:', { ...requestBody, password: '***' });
 
     try {
-        const response = await fetch('https://your-company-api.com/api/auth/login', {
+        const response = await fetch(apiSettings.loginApiUrl, {
             method: 'POST',
             headers: {
                 'accept': 'application/json',
@@ -527,7 +559,7 @@ async function handleAutoDetect() {
 
 // 取得出勤資訊
 async function getAttendanceInfo(startDate, endDate) {
-    const response = await fetch('https://your-company-api.com/api/getAttendanceInfo', {
+    const response = await fetch(apiSettings.attendanceApiUrl, {
         method: 'POST',
         headers: {
             'accept': 'application/json',
@@ -940,3 +972,102 @@ function clearStatus(element) {
 
 // 全域函數供 HTML 使用
 window.clearStatus = clearStatus;
+
+// 初始化應用程式
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('應用程式初始化...');
+
+    // 載入 API 設定
+    await loadApiSettings();
+
+    // 載入儲存的帳號密碼
+    await loadSavedCredentials();
+
+    // 檢查登入狀態
+    await checkLoginStatus();
+
+    // 設定事件監聽器
+    setupEventListeners();
+
+    // 開始時間更新
+    updateTime();
+    setInterval(updateTime, 1000);
+});
+
+// 設定事件監聽器
+function setupEventListeners() {
+    // 登入相關
+    if (elements.loginBtn) {
+        elements.loginBtn.addEventListener('click', handleLogin);
+    }
+
+    if (elements.skipLoginBtn) {
+        elements.skipLoginBtn.addEventListener('click', handleSkipLogin);
+    }
+
+    if (elements.logoutBtn) {
+        elements.logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    // API 設定相關
+    if (elements.toggleApiSettings) {
+        elements.toggleApiSettings.addEventListener('click', function() {
+            elements.apiSettingsSection.classList.toggle('hidden');
+            const isVisible = !elements.apiSettingsSection.classList.contains('hidden');
+            this.textContent = isVisible ? '⚙️ 隱藏設定' : '⚙️ API 設定';
+        });
+    }
+
+    if (elements.saveApiSettings) {
+        elements.saveApiSettings.addEventListener('click', saveApiSettings);
+    }
+
+    if (elements.resetApiSettings) {
+        elements.resetApiSettings.addEventListener('click', resetApiSettings);
+    }
+
+    // 公司域名變更時即時更新前綴
+    if (elements.companyDomain) {
+        elements.companyDomain.addEventListener('input', function() {
+            const domain = this.value.trim() || 'company';
+            if (elements.usernamePrefix) {
+                elements.usernamePrefix.textContent = `${domain}\\`;
+            }
+        });
+    }
+
+    // 其他事件監聽器
+    if (elements.workStartTime) {
+        elements.workStartTime.addEventListener('change', calculateEndTime);
+    }
+
+    if (elements.autoDetectBtn) {
+        elements.autoDetectBtn.addEventListener('click', autoDetectWorkTime);
+    }
+
+    if (elements.testBtn) {
+        elements.testBtn.addEventListener('click', testApiConnection);
+    }
+
+    // Enter 鍵登入
+    if (elements.username) {
+        elements.username.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
+    }
+
+    if (elements.password) {
+        elements.password.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
+    }
+
+    // 設定變更
+    if (elements.showNotification) {
+        elements.showNotification.addEventListener('change', saveSettings);
+    }
+}

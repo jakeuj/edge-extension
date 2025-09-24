@@ -15,10 +15,36 @@
         <!-- 登入區域 -->
         <div id="loginSection" class="section hidden">
             <h3>登入出勤系統</h3>
+
+            <!-- API 設定區域 -->
+            <div class="settings-toggle">
+                <button id="toggleApiSettings" class="btn btn-secondary">⚙️ API 設定</button>
+            </div>
+
+            <div id="apiSettingsSection" class="api-settings hidden">
+                <div class="input-group">
+                    <label for="companyDomain">公司域名：</label>
+                    <input type="text" id="companyDomain" placeholder="例如：gigabyte" value="company">
+                </div>
+                <div class="input-group">
+                    <label for="loginApiUrl">登入 API：</label>
+                    <input type="url" id="loginApiUrl" placeholder="https://your-company-api.com/api/auth/login" value="https://your-company-api.com/api/auth/login">
+                </div>
+                <div class="input-group">
+                    <label for="attendanceApiUrl">出勤查詢 API：</label>
+                    <input type="url" id="attendanceApiUrl" placeholder="https://your-company-api.com/api/getAttendanceInfo" value="https://your-company-api.com/api/getAttendanceInfo">
+                </div>
+                <div class="input-group">
+                    <button id="saveApiSettings" class="btn btn-primary">💾 儲存 API 設定</button>
+                    <button id="resetApiSettings" class="btn btn-secondary">🔄 重置為預設</button>
+                </div>
+            </div>
+
+            <!-- 登入表單 -->
             <div class="input-group">
                 <label for="username">使用者名稱：</label>
                 <div class="username-input">
-                    <span class="username-prefix">company\</span>
+                    <span id="usernamePrefix" class="username-prefix">company\</span>
                     <input type="text" id="username" placeholder="username" value="">
                 </div>
             </div>
