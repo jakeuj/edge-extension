@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>技嘉出勤時間追蹤器 - Microsoft Edge 擴充套件</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .section h3 {
+            color: #555;
+            font-size: 1.5rem;
+            margin: 20px 0 10px 0;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .feature-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .install-steps {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .install-steps ol {
+            margin-left: 20px;
+        }
+        
+        .install-steps li {
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        
+        .download-section {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .code-block {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .section h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🕐 技嘉出勤時間追蹤器</h1>
+            <p>Microsoft Edge 擴充套件 - 智能追蹤您的上下班時間</p>
+        </header>
+
+        <div class="content">
+            <section class="section">
+                <h2>📋 專案簡介</h2>
+                <p>這是一個專為技嘉員工設計的 Microsoft Edge 瀏覽器擴充套件，能夠自動追蹤您的上下班時間，並根據公司的彈性上班制度智能計算預計下班時間。</p>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>🔐 安全登入</h4>
+                        <p>直接連接技嘉 EIP 系統，使用您的公司帳號安全登入</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>⏰ 智能計算</h4>
+                        <p>根據彈性上班制度自動計算預計下班時間</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📊 即時顯示</h4>
+                        <p>即時顯示今日出勤狀況和剩餘工作時間</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>💾 記憶功能</h4>
+                        <p>可選擇記住登入資訊，方便日常使用</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>⚙️ 彈性上班制度規則</h2>
+                <div class="install-steps">
+                    <ul>
+                        <li><strong>彈性上班時間：</strong>8:30 - 9:30</li>
+                        <li><strong>8:30 上班</strong> → 17:45 下班</li>
+                        <li><strong>8:30-9:30 之間上班：</strong>固定工作 9小時15分鐘</li>
+                        <li><strong>9:30 上班</strong> → 18:45 下班</li>
+                        <li><strong>超過 9:30 上班</strong> → 18:45 下班</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>🚀 安裝指南</h2>
+                
+                <h3>方法一：從 Microsoft Edge 商店安裝（推薦）</h3>
+                <div class="install-steps">
+                    <ol>
+                        <li>開啟 Microsoft Edge 瀏覽器</li>
+                        <li>前往 Edge 附加元件商店</li>
+                        <li>搜尋「技嘉出勤時間追蹤器」</li>
+                        <li>點擊「取得」進行安裝</li>
+                        <li>安裝完成後，點擊瀏覽器工具列上的擴充套件圖示</li>
+                    </ol>
+                </div>
+
+                <h3>方法二：手動安裝開發版本</h3>
+                <div class="install-steps">
+                    <ol>
+                        <li>下載專案檔案到本機</li>
+                        <li>開啟 Microsoft Edge，前往 <code>edge://extensions/</code></li>
+                        <li>開啟右上角的「開發人員模式」</li>
+                        <li>點擊「載入解壓縮」按鈕</li>
+                        <li>選擇下載的專案資料夾</li>
+                        <li>擴充套件安裝完成！</li>
+                    </ol>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>📖 使用說明</h2>
+                
+                <h3>首次使用</h3>
+                <div class="install-steps">
+                    <ol>
+                        <li>點擊瀏覽器工具列上的擴充套件圖示</li>
+                        <li>輸入您的技嘉帳號（格式：gigabyte\your.username）</li>
+                        <li>輸入密碼</li>
+                        <li>可選擇「記住登入資訊」以便下次快速登入</li>
+                        <li>點擊「登入」按鈕</li>
+                    </ol>
+                </div>
+
+                <h3>日常使用</h3>
+                <p>登入成功後，擴充套件會自動顯示：</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>今日日期</li>
+                    <li>上班打卡時間</li>
+                    <li>下班打卡時間（如已打卡）</li>
+                    <li>根據彈性制度計算的預計下班時間</li>
+                    <li>剩餘工作時間</li>
+                </ul>
+            </section>
+
+            <div class="warning">
+                <strong>⚠️ 注意事項：</strong>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>此擴充套件僅供技嘉員工使用</li>
+                    <li>需要有效的技嘉 EIP 系統帳號</li>
+                    <li>登入資訊會安全儲存在本機，不會傳送到第三方伺服器</li>
+                    <li>建議定期更新擴充套件以獲得最新功能</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="download-section">
+            <h2>📥 立即下載</h2>
+            <p>開始使用技嘉出勤時間追蹤器，讓工作時間管理更輕鬆！</p>
+            <a href="https://github.com/jakeuj/edge-extension" class="download-btn" target="_blank">
+                📁 GitHub 專案頁面
+            </a>
+            <a href="https://github.com/jakeuj/edge-extension/releases" class="download-btn" target="_blank">
+                ⬇️ 下載最新版本
+            </a>
+        </div>
+
+        <footer class="footer">
+            <p>&copy; 2024 技嘉出勤時間追蹤器 | 由 Jake Chu 開發 | MIT License</p>
+            <p>🌐 <a href="https://edge.jakeuj.com" style="color: white;">edge.jakeuj.com</a></p>
+        </footer>
+    </div>
+</body>
+</html>
