@@ -14,6 +14,9 @@
             <button class="header-btn logout-btn" id="logoutBtn" title="登出">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
+            <button class="header-btn back-btn" id="backBtn" title="返回" style="display: none;">
+                <i class="fas fa-arrow-left"></i>
+            </button>
         </div>
         <div class="header-content">
             <h1>技嘉出勤追蹤器</h1>
@@ -64,25 +67,33 @@
         <div class="tab-content active" id="todayContent">
             <div class="info-card">
                 <h3>今日出勤資訊</h3>
-                <div class="info-row">
-                    <span class="label">日期:</span>
-                    <span class="value" id="todayDate">--</span>
+
+                <!-- 基本出勤資訊區塊 -->
+                <div class="info-section basic-attendance">
+                    <div class="info-row">
+                        <span class="label">日期:</span>
+                        <span class="value" id="todayDate">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">上班時間:</span>
+                        <span class="value" id="clockInTime">--:--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">下班時間:</span>
+                        <span class="value" id="clockOutTime">--:--</span>
+                    </div>
                 </div>
-                <div class="info-row">
-                    <span class="label">上班時間:</span>
-                    <span class="value" id="clockInTime">--:--</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">下班時間:</span>
-                    <span class="value" id="clockOutTime">--:--</span>
-                </div>
-                <div class="info-row highlight">
-                    <span class="label">預計下班:</span>
-                    <span class="value" id="expectedClockOut">--:--</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">剩餘時間:</span>
-                    <span class="value" id="remainingTime">--:--</span>
+
+                <!-- 預計時間資訊區塊 -->
+                <div class="info-section expected-time">
+                    <div class="info-row highlight">
+                        <span class="label">預計下班:</span>
+                        <span class="value" id="expectedClockOut">--:--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">剩餘時間:</span>
+                        <span class="value" id="remainingTime">--:--</span>
+                    </div>
                 </div>
             </div>
         </div>

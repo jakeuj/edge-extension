@@ -506,6 +506,9 @@ class PopupManager {
         // 更新狀態
         this.isInSettingsPage = false;
 
+        // 更新 header 按鈕顯示狀態
+        this.updateHeaderButtonsForMain();
+
         // 載入儲存的帳號
         await this.loadSavedAccount();
 
@@ -524,6 +527,9 @@ class PopupManager {
 
         // 更新狀態
         this.isInSettingsPage = false;
+
+        // 更新 header 按鈕顯示狀態
+        this.updateHeaderButtonsForMain();
 
         // 初始化選項卡（預設顯示今日出勤）
         this.handleTabSwitch('today');
@@ -687,6 +693,9 @@ class PopupManager {
             // 更新狀態
             this.isInSettingsPage = true;
 
+            // 更新 header 按鈕顯示狀態
+            this.updateHeaderButtonsForSettings();
+
             // 載入當前設定
             await this.loadCurrentSettings();
 
@@ -705,6 +714,9 @@ class PopupManager {
 
             // 更新狀態
             this.isInSettingsPage = false;
+
+            // 恢復 header 按鈕顯示狀態
+            this.updateHeaderButtonsForMain();
 
             // 根據登入狀態顯示對應頁面
             const isLoggedIn = window.authManager.isLoggedIn;
@@ -786,6 +798,34 @@ class PopupManager {
                 option.classList.remove('selected');
             }
         });
+    }
+
+    // 更新 header 按鈕顯示狀態 - 設定頁面模式
+    updateHeaderButtonsForSettings() {
+        // 隱藏登出按鈕和設定按鈕
+        this.hideElement('logoutBtn');
+        this.hideElement('settingsBtn');
+
+        // 顯示返回按鈕
+        this.showElement('backBtn');
+    }
+
+    // 更新 header 按鈕顯示狀態 - 主頁面模式
+    updateHeaderButtonsForMain() {
+        // 隱藏返回按鈕
+        this.hideElement('backBtn');
+
+        // 根據登入狀態顯示對應按鈕
+        const isLoggedIn = window.authManager && window.authManager.isLoggedIn;
+        if (isLoggedIn) {
+            // 已登入：顯示登出按鈕和設定按鈕
+            this.showElement('logoutBtn');
+            this.showElement('settingsBtn');
+        } else {
+            // 未登入：隱藏登出按鈕，顯示設定按鈕
+            this.hideElement('logoutBtn');
+            this.showElement('settingsBtn');
+        }
     }
 
     // 處理自動重新整理設定
