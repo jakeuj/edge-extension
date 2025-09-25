@@ -242,6 +242,100 @@
             color: #667eea;
             font-weight: 500;
         }
+
+        /* 贊助區塊樣式 */
+        .sponsor-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            margin: 40px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sponsor-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="20" cy="80" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .sponsor-section h2 {
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sponsor-section p {
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sponsor-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sponsor-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            color: #667eea;
+            padding: 15px 25px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+        }
+
+        .sponsor-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            text-decoration: none;
+            color: #667eea;
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .sponsor-btn.paypal {
+            background: #0070ba;
+            color: white;
+        }
+
+        .sponsor-btn.paypal:hover {
+            background: #005ea6;
+            color: white;
+        }
+
+        .sponsor-icon {
+            font-size: 1.2rem;
+        }
+
+        .sponsor-amount {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 15px;
+            position: relative;
+            z-index: 1;
+        }
         
         .code-block {
             background: #f4f4f4;
@@ -417,6 +511,23 @@
 
             <div class="update-info">
                 <p>🤝 歡迎更多開發者加入我們！如果您想貢獻代碼，請前往 <a href="https://github.com/jakeuj/edge-extension" target="_blank" style="color: #667eea;">GitHub 專案頁面</a></p>
+            </div>
+        </div>
+
+        <!-- 贊助支持區塊 -->
+        <div class="sponsor-section">
+            <h2>☕ 支持專案開發</h2>
+            <p>如果這個工具對您有幫助，歡迎請開發者喝杯咖啡！您的支持是我們持續改進的動力 💪</p>
+
+            <div class="sponsor-buttons">
+                <a href="https://www.paypal.com/ncp/payment/PLYGLLUS2Z8VS" target="_blank" class="sponsor-btn paypal">
+                    <span class="sponsor-icon">💳</span>
+                    <span>PayPal 贊助</span>
+                </a>
+            </div>
+
+            <div class="sponsor-amount">
+                <p>💝 任何金額都是對我們最大的鼓勵！</p>
             </div>
         </div>
 
