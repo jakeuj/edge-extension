@@ -17,7 +17,7 @@ class ApiManager {
             // 如果沒有指定日期，使用今天
             const today = new Date();
             const defaultDate = this.formatDate(today);
-            
+
             const requestData = {
                 startDate: startDate || defaultDate,
                 endDate: endDate || defaultDate,
@@ -46,6 +46,84 @@ class ApiManager {
             }
         } catch (error) {
             console.error('取得出勤資訊錯誤:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    // 取得異常出勤資訊（過去45天）
+    async getAbnormalAttendance(serverKey) {
+        try {
+            if (!serverKey) {
+                throw new Error('缺少認證金鑰，請重新登入');
+            }
+
+            // 計算過去45天的日期範圍
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(endDate.getDate() - 45);
+
+            const startDateStr = this.formatDate(startDate);
+            const endDateStr = this.formatDate(endDate);
+
+            // 發送請求到背景腳本
+            const response = await this.sendMessage({
+                action: 'getHistoryAttendance',
+                serverKey: serverKey,
+                startDate: startDateStr,
+                endDate: endDateStr
+            });
+
+            if (response.success) {
+                return {
+                    success: true,
+                    data: response.data,
+                    message: response.message
+                };
+            } else {
+                throw new Error(response.error || '無法取得異常出勤資料');
+            }
+        } catch (error) {
+            console.error('取得異常出勤資訊錯誤:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    // 取得歷史出勤資訊（保留原方法以維持相容性）
+    async getHistoryAttendance(serverKey, startDate, endDate) {
+        try {
+            if (!serverKey) {
+                throw new Error('缺少認證金鑰，請重新登入');
+            }
+
+            if (!startDate || !endDate) {
+                throw new Error('請指定查詢日期範圍');
+            }
+
+            // 發送請求到背景腳本
+            const response = await this.sendMessage({
+                action: 'getHistoryAttendance',
+                serverKey: serverKey,
+                startDate: startDate,
+                endDate: endDate
+            });
+
+            if (response.success) {
+                return {
+                    success: true,
+                    data: response.data,
+                    message: response.message
+                };
+            } else {
+                throw new Error(response.error || '無法取得歷史出勤資料');
+            }
+        } catch (error) {
+            console.error('取得歷史出勤資訊錯誤:', error);
             return {
                 success: false,
                 error: error.message
@@ -112,6 +190,82 @@ class ApiManager {
         }
 
         return todayRecord;
+    }
+
+    // 解析歷史出勤資料
+    parseHistoryAttendance(attendanceData) {
+        const historyRecords = [];
+
+        if (attendanceData && attendanceData.deptItemList) {
+            for (const dept of attendanceData.deptItemList) {
+                if (dept.employeeItemList) {
+                    for (const employee of dept.employeeItemList) {
+                        const record = {
+                            employeeId: employee.employeeId,
+                            name: employee.name,
+                            date: employee.date,
+                            status: employee.status,
+                            punchIn: employee.punchIn,
+                            punchOut: employee.punchOut,
+                            leaveTime: employee.leaveTime,
+                            holidayPunchIn: employee.holidayPunchIn,
+                            holidayPunchOut: employee.holidayPunchOut,
+                            deptName: dept.deptName,
+                            // 計算工作時間
+                            workHours: this.calculateWorkHours(employee.punchIn, employee.punchOut),
+                            // 格式化日期用於排序
+                            sortDate: this.parseRecordDate(employee.date)
+                        };
+                        historyRecords.push(record);
+                    }
+                }
+            }
+        }
+
+        // 按日期排序（最新的在前）
+        historyRecords.sort((a, b) => {
+            if (a.sortDate && b.sortDate) {
+                return new Date(b.sortDate) - new Date(a.sortDate);
+            }
+            return 0;
+        });
+
+        return historyRecords;
+    }
+
+    // 解析異常出勤資料（只保留異常記錄）
+    parseAbnormalAttendance(attendanceData) {
+        const allRecords = this.parseHistoryAttendance(attendanceData);
+
+        // 只保留狀態為「異常」的記錄
+        const abnormalRecords = allRecords.filter(record => {
+            return record.status === '異常';
+        });
+
+        return abnormalRecords;
+    }
+
+    // 計算工作時間
+    calculateWorkHours(punchIn, punchOut) {
+        if (!punchIn || !punchOut || punchIn === '--:--' || punchOut === '--:--') {
+            return '--:--';
+        }
+
+        try {
+            const inMinutes = this.parseTimeToMinutes(punchIn);
+            const outMinutes = this.parseTimeToMinutes(punchOut);
+
+            if (inMinutes !== null && outMinutes !== null && outMinutes > inMinutes) {
+                const workMinutes = outMinutes - inMinutes;
+                const hours = Math.floor(workMinutes / 60);
+                const minutes = workMinutes % 60;
+                return `${hours}小時${minutes}分鐘`;
+            }
+        } catch (error) {
+            console.error('計算工作時間錯誤:', error);
+        }
+
+        return '--:--';
     }
 
     // 解析記錄日期格式 (2025/09/24(二) -> 2025-09-24)
@@ -196,16 +350,24 @@ class ApiManager {
 
     // 發送訊息到背景腳本
     async sendMessage(message) {
-        return new Promise((resolve, reject) => {
-            chrome.runtime.sendMessage(message, (response) => {
-                if (chrome.runtime.lastError) {
-                    reject(new Error(chrome.runtime.lastError.message));
-                } else {
-                    resolve(response);
-                }
+        // 檢查是否在擴充套件環境中
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+            return new Promise((resolve, reject) => {
+                chrome.runtime.sendMessage(message, (response) => {
+                    if (chrome.runtime.lastError) {
+                        reject(new Error(chrome.runtime.lastError.message));
+                    } else {
+                        resolve(response);
+                    }
+                });
             });
-        });
+        } else {
+            // 非擴展環境，返回錯誤
+            return Promise.reject(new Error('Chrome Extension API 不可用'));
+        }
     }
+
+
 
     // 檢查 serverKey 是否有效
     async validateServerKey(serverKey) {

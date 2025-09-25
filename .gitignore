@@ -5,6 +5,7 @@
 # 測試檔案
 app.http
 *.http
+test-data.js
 
 # 系統檔案
 .DS_Store
@@ -41,3 +42,11 @@ yarn-error.log*
 # 個人設定檔案
 config.local.js
 settings.local.json
+dev-config.js
+http-client.private.env.json
+
+# 包含敏感資料的檔案
+**/credentials.js
+**/secrets.js
+**/.env
+**/.env.local

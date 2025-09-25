@@ -10,27 +10,36 @@ class AuthManager {
     // 初始化認證管理器
     async init() {
         try {
-            const data = await chrome.storage.local.get([
-                'isLoggedIn', 
-                'serverKey', 
-                'lastLoginTime', 
-                'savedAccount'
-            ]);
-            
-            this.isLoggedIn = data.isLoggedIn || false;
-            this.serverKey = data.serverKey || null;
-            this.loginTime = data.lastLoginTime || null;
-            
-            // 檢查登入是否過期（8小時）
-            if (this.isLoggedIn && this.loginTime) {
-                const hoursSinceLogin = (Date.now() - this.loginTime) / (1000 * 60 * 60);
-                if (hoursSinceLogin > 8) {
-                    await this.logout();
-                    return false;
+            // 檢查是否在擴充套件環境中
+            if (typeof chrome !== 'undefined' && chrome.storage) {
+                const data = await chrome.storage.local.get([
+                    'isLoggedIn',
+                    'serverKey',
+                    'lastLoginTime',
+                    'savedAccount'
+                ]);
+
+                this.isLoggedIn = data.isLoggedIn || false;
+                this.serverKey = data.serverKey || null;
+                this.loginTime = data.lastLoginTime || null;
+
+                // 檢查登入是否過期（8小時）
+                if (this.isLoggedIn && this.loginTime) {
+                    const hoursSinceLogin = (Date.now() - this.loginTime) / (1000 * 60 * 60);
+                    if (hoursSinceLogin > 8) {
+                        await this.logout();
+                        return false;
+                    }
                 }
+
+                return this.isLoggedIn;
+            } else {
+                // 非擴展環境，返回未登入狀態
+                this.isLoggedIn = false;
+                this.serverKey = null;
+                this.loginTime = null;
+                return false;
             }
-            
-            return this.isLoggedIn;
         } catch (error) {
             console.error('初始化認證管理器失敗:', error);
             return false;
@@ -108,8 +117,13 @@ class AuthManager {
     // 取得儲存的帳號資訊
     async getSavedAccount() {
         try {
-            const data = await chrome.storage.local.get(['savedAccount']);
-            return data.savedAccount || '';
+            if (typeof chrome !== 'undefined' && chrome.storage) {
+                const data = await chrome.storage.local.get(['savedAccount']);
+                return data.savedAccount || '';
+            } else {
+                // 非擴展環境，返回空字串
+                return '';
+            }
         } catch (error) {
             console.error('取得儲存帳號失敗:', error);
             return '';
@@ -146,16 +160,24 @@ class AuthManager {
 
     // 發送訊息到背景腳本
     async sendMessage(message) {
-        return new Promise((resolve, reject) => {
-            chrome.runtime.sendMessage(message, (response) => {
-                if (chrome.runtime.lastError) {
-                    reject(new Error(chrome.runtime.lastError.message));
-                } else {
-                    resolve(response);
-                }
+        // 檢查是否在擴充套件環境中
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+            return new Promise((resolve, reject) => {
+                chrome.runtime.sendMessage(message, (response) => {
+                    if (chrome.runtime.lastError) {
+                        reject(new Error(chrome.runtime.lastError.message));
+                    } else {
+                        resolve(response);
+                    }
+                });
             });
-        });
+        } else {
+            // 非擴展環境，返回錯誤
+            return Promise.reject(new Error('Chrome Extension API 不可用'));
+        }
     }
+
+
 
     // 驗證帳號格式
     validateAccountFormat(account) {
