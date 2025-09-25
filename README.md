@@ -1,5 +1,10 @@
 # 技嘉出勤時間追蹤器
 
+[![GitHub release](https://img.shields.io/github/v/release/jakeuj/edge-extension?style=flat-square)](https://github.com/jakeuj/edge-extension/releases)
+[![License](https://img.shields.io/github/license/jakeuj/edge-extension?style=flat-square)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/jakeuj/edge-extension?style=flat-square)](https://github.com/jakeuj/edge-extension/stargazers)
+[![PayPal](https://img.shields.io/badge/PayPal-贊助-blue?style=flat-square&logo=paypal)](https://www.paypal.com/ncp/payment/PLYGLLUS2Z8VS)
+
 一個專為技嘉員工設計的 Microsoft Edge 瀏覽器擴充套件，能夠自動追蹤您的上下班時間，並根據公司的彈性上班制度智能計算預計下班時間。
 
 ## 🌟 主要功能
@@ -127,11 +132,25 @@ edge-extension/
 
 本專案採用 MIT 授權條款。詳細內容請參閱 [LICENSE](LICENSE) 檔案。
 
-## 👨‍💻 開發者
+## � 開發貢獻者
 
-- **Jake Chu** - 初始開發
-- GitHub: [@jakeuj](https://github.com/jakeuj)
+- **Jake Chu** ([@jakeuj](https://github.com/jakeuj)) - 🚀 專案創建者 & 主要開發者
+- **GigabyteMickey** ([@GigabyteMickey](https://github.com/GigabyteMickey)) - 🎨 UI/UX 改進專家
 - 專案網站: [edge.jakeuj.com](https://edge.jakeuj.com)
+
+## ☕ 支持專案開發
+
+如果這個工具對您有幫助，歡迎請開發者喝杯咖啡！您的支持是我們持續改進的動力 💪
+
+[![PayPal](https://img.shields.io/badge/PayPal-贊助-blue?style=for-the-badge&logo=paypal)](https://www.paypal.com/ncp/payment/PLYGLLUS2Z8VS)
+
+**💝 任何金額都是對我們最大的鼓勵！**
+
+您的贊助將幫助我們：
+- 🔧 持續改進和修復功能
+- ✨ 開發新功能和特色
+- 📚 維護文檔和使用指南
+- 🛡️ 確保安全性和穩定性
 
 ## 🔄 版本歷史
 
