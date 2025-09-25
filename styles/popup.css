@@ -5,6 +5,36 @@
     box-sizing: border-box;
 }
 
+/* 確保擴展環境中的正確顯示 */
+html, body {
+    width: 400px !important;
+    height: 500px !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 修復 Chrome 擴展 popup 的常見問題 */
+html {
+    box-sizing: border-box;
+}
+
+body {
+    position: relative;
+    display: block;
+}
+
+/* Font Awesome 回退方案 */
+.fas, .fa {
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", sans-serif;
+    font-weight: 900;
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    line-height: 1;
+}
+
 /* CSS 變數定義 - 預設為白色主題 */
 :root {
     /* 主要顏色 */
@@ -120,6 +150,11 @@ body {
     color: var(--theme-textPrimary);
     background-color: var(--theme-backgroundSecondary);
     transition: color 0.3s ease, background-color 0.3s ease;
+    width: 400px;
+    height: 500px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
 .container {
@@ -133,6 +168,11 @@ body {
     display: flex;
     flex-direction: column;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    /* 確保容器在擴展環境中正確顯示 */
+    min-width: 400px;
+    min-height: 500px;
+    max-width: 400px;
+    max-height: 500px;
 }
 
 /* 標題區域 */
