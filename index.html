@@ -161,6 +161,87 @@
             background: #f8f9fa;
             border-radius: 6px;
         }
+
+        /* 貢獻者區塊樣式 */
+        .contributors-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 40px 30px;
+            border-radius: 12px;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .contributors-section h2 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .contributors-section p {
+            color: #6c757d;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .contributors-grid {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .contributor-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            min-width: 200px;
+            border: 2px solid transparent;
+        }
+
+        .contributor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #667eea;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .contributor-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            border: 3px solid #e9ecef;
+            transition: border-color 0.3s ease;
+        }
+
+        .contributor-card:hover .contributor-avatar {
+            border-color: #667eea;
+        }
+
+        .contributor-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .contributor-role {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .contributor-contributions {
+            font-size: 0.8rem;
+            color: #667eea;
+            font-weight: 500;
+        }
         
         .code-block {
             background: #f4f4f4;
@@ -308,6 +389,34 @@
                     <li>登入資訊會安全儲存在本機，不會傳送到第三方伺服器</li>
                     <li>建議定期更新擴充套件以獲得最新功能</li>
                 </ul>
+            </div>
+        </div>
+
+        <!-- 貢獻者區塊 -->
+        <div class="contributors-section">
+            <h2>👥 開發貢獻者</h2>
+            <p>感謝所有參與技嘉出勤時間追蹤器開發的貢獻者們！</p>
+
+            <div class="contributors-grid">
+                <!-- 主要開發者 -->
+                <a href="https://github.com/jakeuj" target="_blank" class="contributor-card">
+                    <img src="https://github.com/jakeuj.png" alt="jakeuj" class="contributor-avatar">
+                    <div class="contributor-name">Jake Chu</div>
+                    <div class="contributor-role">🚀 專案創建者 & 主要開發者</div>
+                    <div class="contributor-contributions">核心功能開發、架構設計</div>
+                </a>
+
+                <!-- UI/UX 貢獻者 -->
+                <a href="https://github.com/GigabyteMickey" target="_blank" class="contributor-card">
+                    <img src="https://github.com/GigabyteMickey.png" alt="GigabyteMickey" class="contributor-avatar">
+                    <div class="contributor-name">GigabyteMickey</div>
+                    <div class="contributor-role">🎨 UI/UX 改進專家</div>
+                    <div class="contributor-contributions">UI 佈局修復、使用者體驗優化</div>
+                </a>
+            </div>
+
+            <div class="update-info">
+                <p>🤝 歡迎更多開發者加入我們！如果您想貢獻代碼，請前往 <a href="https://github.com/jakeuj/edge-extension" target="_blank" style="color: #667eea;">GitHub 專案頁面</a></p>
             </div>
         </div>
 
