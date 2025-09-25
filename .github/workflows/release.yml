@@ -158,16 +158,19 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
-    - name: Update download link in index.html
+    - name: Update version and download links in index.html
       run: |
-        # 更新 index.html 中的下載連結
+        # 更新 index.html 中的版本號和下載連結
         VERSION="${{ steps.version.outputs.version }}"
         DOWNLOAD_URL="https://github.com/jakeuj/edge-extension/releases/download/v${VERSION}/gigabyte-attendance-tracker-v${VERSION}.zip"
-        
-        # 更新下載按鈕的連結
-        sed -i "s|href=\"https://github.com/jakeuj/edge-extension/releases\"|href=\"$DOWNLOAD_URL\"|g" index.html
-        
-        echo "Updated download link in index.html"
+
+        # 更新版本號顯示
+        sed -i "s|<strong>v[0-9]\+\.[0-9]\+\.[0-9]\+</strong>|<strong>v${VERSION}</strong>|g" index.html
+
+        # 更新下載連結（匹配實際的下載 URL 模式）
+        sed -i "s|https://github.com/jakeuj/edge-extension/releases/download/v[0-9]\+\.[0-9]\+\.[0-9]\+/gigabyte-attendance-tracker-v[0-9]\+\.[0-9]\+\.[0-9]\+\.zip|${DOWNLOAD_URL}|g" index.html
+
+        echo "Updated version to v${VERSION} and download links in index.html"
         
     - name: Commit updated files
       run: |
