@@ -9,6 +9,7 @@ class PopupManager {
         this.currentTab = 'today';
         this.abnormalData = [];
         this.abnormalCount = 0;
+        this.isInSettingsPage = false; // 追蹤是否在設定頁面
     }
 
     // 初始化 popup
@@ -18,10 +19,13 @@ class PopupManager {
             
             // 等待所有模組載入
             await this.waitForModules();
-            
+
+            // 初始化主題管理器
+            await window.themeManager.init();
+
             // 初始化認證管理器
             const isLoggedIn = await window.authManager.init();
-            
+
             // 設定事件監聽器
             this.setupEventListeners();
             
@@ -47,14 +51,15 @@ class PopupManager {
     async waitForModules() {
         const maxWait = 5000; // 最多等待 5 秒
         const startTime = Date.now();
-        
+
         while (Date.now() - startTime < maxWait) {
-            if (window.authManager && window.apiManager && window.timeCalculator) {
+            if (window.authManager && window.apiManager && window.timeCalculator &&
+                window.themeManager && window.storageManager) {
                 return;
             }
             await new Promise(resolve => setTimeout(resolve, 100));
         }
-        
+
         throw new Error('模組載入超時');
     }
 
@@ -72,6 +77,56 @@ class PopupManager {
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => this.handleLogout());
+        }
+
+        // 設定按鈕 - 實現切換功能
+        const settingsBtn = document.getElementById('settingsBtn');
+        if (settingsBtn) {
+            settingsBtn.addEventListener('click', () => this.toggleSettingsSection());
+        }
+
+        // 返回按鈕
+        const backBtn = document.getElementById('backBtn');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => this.handleBackFromSettings());
+        }
+
+        // 主題選擇器
+        const themeRadios = document.querySelectorAll('input[name="theme"]');
+        themeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.handleThemeChange(e.target.value);
+                }
+            });
+        });
+
+        // 主題選項點擊
+        const themeOptions = document.querySelectorAll('.theme-option');
+        themeOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+                const themeId = option.dataset.theme;
+                const radio = option.querySelector('input[type="radio"]');
+                if (radio && themeId) {
+                    radio.checked = true;
+                    this.handleThemeChange(themeId);
+                }
+            });
+        });
+
+        // 其他設定項目
+        const autoRefreshToggle = document.getElementById('autoRefresh');
+        if (autoRefreshToggle) {
+            autoRefreshToggle.addEventListener('change', (e) => {
+                this.handleAutoRefreshToggle(e.target.checked);
+            });
+        }
+
+        const notificationsToggle = document.getElementById('notifications');
+        if (notificationsToggle) {
+            notificationsToggle.addEventListener('change', (e) => {
+                this.handleNotificationsToggle(e.target.checked);
+            });
         }
 
         // 帳號輸入框自動完成
@@ -445,11 +500,15 @@ class PopupManager {
     // 顯示登入區域
     async showLoginSection() {
         this.hideElement('attendanceSection');
+        this.hideElement('settingsSection');
         this.showElement('loginSection');
-        
+
+        // 更新狀態
+        this.isInSettingsPage = false;
+
         // 載入儲存的帳號
         await this.loadSavedAccount();
-        
+
         // 清空密碼欄位
         const passwordInput = document.getElementById('password');
         if (passwordInput) {
@@ -460,7 +519,11 @@ class PopupManager {
     // 顯示出勤區域
     async showAttendanceSection() {
         this.hideElement('loginSection');
+        this.hideElement('settingsSection');
         this.showElement('attendanceSection');
+
+        // 更新狀態
+        this.isInSettingsPage = false;
 
         // 初始化選項卡（預設顯示今日出勤）
         this.handleTabSwitch('today');
@@ -593,6 +656,185 @@ class PopupManager {
     showSuccess(message) {
         console.log('成功:', message);
         // 可以在這裡添加成功訊息的顯示邏輯
+    }
+
+    // 切換設定頁面（新增的切換方法）
+    async toggleSettingsSection() {
+        try {
+            if (this.isInSettingsPage) {
+                // 如果已在設定頁面，則返回主頁面
+                await this.handleBackFromSettings();
+            } else {
+                // 如果不在設定頁面，則進入設定頁面
+                await this.showSettingsSection();
+            }
+        } catch (error) {
+            console.error('切換設定頁面失敗:', error);
+            this.showError('切換設定失敗: ' + error.message);
+        }
+    }
+
+    // 顯示設定頁面
+    async showSettingsSection() {
+        try {
+            // 隱藏其他區域
+            this.hideElement('loginSection');
+            this.hideElement('attendanceSection');
+
+            // 顯示設定區域
+            this.showElement('settingsSection');
+
+            // 更新狀態
+            this.isInSettingsPage = true;
+
+            // 載入當前設定
+            await this.loadCurrentSettings();
+
+            console.log('已切換到設定頁面');
+        } catch (error) {
+            console.error('顯示設定頁面失敗:', error);
+            this.showError('載入設定失敗: ' + error.message);
+        }
+    }
+
+    // 從設定頁面返回
+    async handleBackFromSettings() {
+        try {
+            // 隱藏設定區域
+            this.hideElement('settingsSection');
+
+            // 更新狀態
+            this.isInSettingsPage = false;
+
+            // 根據登入狀態顯示對應頁面
+            const isLoggedIn = window.authManager.isLoggedIn;
+            if (isLoggedIn) {
+                await this.showAttendanceSection();
+            } else {
+                await this.showLoginSection();
+            }
+
+            console.log('已返回主頁面');
+        } catch (error) {
+            console.error('返回主頁面失敗:', error);
+            this.showError('返回失敗: ' + error.message);
+        }
+    }
+
+    // 載入當前設定
+    async loadCurrentSettings() {
+        try {
+            // 載入主題設定
+            const currentTheme = window.themeManager.getCurrentTheme();
+            const themeRadio = document.querySelector(`input[name="theme"][value="${currentTheme.id}"]`);
+            if (themeRadio) {
+                themeRadio.checked = true;
+                // 更新主題選項的選中狀態
+                this.updateThemeSelection(currentTheme.id);
+            }
+
+            // 載入其他設定
+            if (window.storageManager) {
+                const settingsResult = await window.storageManager.getSettings();
+                if (settingsResult.success) {
+                    const settings = settingsResult.data;
+
+                    // 更新自動重新整理設定
+                    const autoRefreshToggle = document.getElementById('autoRefresh');
+                    if (autoRefreshToggle) {
+                        autoRefreshToggle.checked = settings.autoRefresh !== false;
+                    }
+
+                    // 更新通知設定
+                    const notificationsToggle = document.getElementById('notifications');
+                    if (notificationsToggle) {
+                        notificationsToggle.checked = settings.notifications !== false;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('載入設定失敗:', error);
+        }
+    }
+
+    // 處理主題變更
+    async handleThemeChange(themeId) {
+        try {
+            console.log('切換主題:', themeId);
+
+            const success = await window.themeManager.switchTheme(themeId);
+            if (success) {
+                this.updateThemeSelection(themeId);
+                this.showSuccess(`已切換到${window.themeManager.themes[themeId].name}`);
+            } else {
+                this.showError('主題切換失敗');
+            }
+        } catch (error) {
+            console.error('主題切換錯誤:', error);
+            this.showError('主題切換失敗: ' + error.message);
+        }
+    }
+
+    // 更新主題選擇的視覺狀態
+    updateThemeSelection(selectedThemeId) {
+        const themeOptions = document.querySelectorAll('.theme-option');
+        themeOptions.forEach(option => {
+            const themeId = option.dataset.theme;
+            if (themeId === selectedThemeId) {
+                option.classList.add('selected');
+            } else {
+                option.classList.remove('selected');
+            }
+        });
+    }
+
+    // 處理自動重新整理設定
+    async handleAutoRefreshToggle(enabled) {
+        try {
+            console.log('自動重新整理設定:', enabled);
+
+            if (window.storageManager) {
+                const result = await window.storageManager.saveSettings({
+                    autoRefresh: enabled
+                });
+
+                if (result.success) {
+                    if (enabled) {
+                        this.startAutoRefresh();
+                    } else {
+                        this.clearAutoRefresh();
+                    }
+                    this.showSuccess(`自動重新整理已${enabled ? '開啟' : '關閉'}`);
+                } else {
+                    this.showError('設定儲存失敗');
+                }
+            }
+        } catch (error) {
+            console.error('自動重新整理設定錯誤:', error);
+            this.showError('設定失敗: ' + error.message);
+        }
+    }
+
+    // 處理通知設定
+    async handleNotificationsToggle(enabled) {
+        try {
+            console.log('通知設定:', enabled);
+
+            if (window.storageManager) {
+                const result = await window.storageManager.saveSettings({
+                    notifications: enabled
+                });
+
+                if (result.success) {
+                    this.showSuccess(`通知提醒已${enabled ? '開啟' : '關閉'}`);
+                } else {
+                    this.showError('設定儲存失敗');
+                }
+            }
+        } catch (error) {
+            console.error('通知設定錯誤:', error);
+            this.showError('設定失敗: ' + error.message);
+        }
     }
 
     // 更新元素內容
