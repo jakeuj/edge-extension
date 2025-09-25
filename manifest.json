@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "技嘉出勤時間追蹤器",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "追蹤技嘉員工的上下班時間，根據彈性上班制度計算預計下班時間",
   "author": "Jake Chu",
   
