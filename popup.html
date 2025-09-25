@@ -6,6 +6,27 @@
     <title>技嘉出勤時間追蹤器</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles/popup.css">
+    <style>
+        /* 緊急修復：確保擴展 popup 正確顯示 */
+        html, body {
+            width: 400px !important;
+            height: 500px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+        }
+
+        /* Font Awesome 圖標回退 */
+        .fa-sign-out-alt::before { content: "⏻"; }
+        .fa-arrow-left::before { content: "←"; }
+        .fa-cog::before { content: "⚙"; }
+        .fa-refresh::before { content: "↻"; }
+        .fa-calendar::before { content: "📅"; }
+        .fa-clock::before { content: "🕐"; }
+        .fa-user::before { content: "👤"; }
+        .fa-check::before { content: "✓"; }
+        .fa-times::before { content: "✕"; }
+    </style>
 </head>
 <body>
 <div class="container">
