@@ -4,7 +4,11 @@ class PopupManager {
     constructor() {
         this.isInitialized = false;
         this.refreshInterval = null;
+        this.autoRefreshInterval = null;
         this.currentAttendanceData = null;
+        this.currentTab = 'today';
+        this.abnormalData = [];
+        this.abnormalCount = 0;
     }
 
     // 初始化 popup
@@ -24,7 +28,8 @@ class PopupManager {
             // 根據登入狀態顯示對應介面
             if (isLoggedIn) {
                 await this.showAttendanceSection();
-                await this.loadAttendanceData();
+                await this.loadAllData();
+                this.startAutoRefresh();
             } else {
                 await this.showLoginSection();
             }
@@ -61,11 +66,7 @@ class PopupManager {
             loginForm.addEventListener('submit', (e) => this.handleLogin(e));
         }
 
-        // 重新整理按鈕
-        const refreshBtn = document.getElementById('refreshBtn');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => this.handleRefresh());
-        }
+
 
         // 登出按鈕
         const logoutBtn = document.getElementById('logoutBtn');
@@ -78,6 +79,21 @@ class PopupManager {
         if (accountInput) {
             accountInput.addEventListener('focus', () => this.loadSavedAccount());
         }
+
+        // 選項卡切換
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // 確保獲取正確的 data-tab 屬性，即使點擊的是子元素（如徽章）
+                const button = e.currentTarget; // 使用 currentTarget 而不是 target
+                const tabName = button.dataset.tab;
+                if (tabName) {
+                    this.handleTabSwitch(tabName);
+                }
+            });
+        });
+
+        // 移除歷史記錄相關的事件監聽器，因為異常記錄會自動載入
     }
 
     // 處理登入
@@ -85,8 +101,8 @@ class PopupManager {
         event.preventDefault();
         
         try {
-            this.showLoading(true);
-            
+            this.showLoading(true, '正在登入...');
+
             const account = document.getElementById('account').value.trim();
             const password = document.getElementById('password').value;
             const remember = document.getElementById('remember').checked;
@@ -107,7 +123,8 @@ class PopupManager {
             
             if (result.success) {
                 await this.showAttendanceSection();
-                await this.loadAttendanceData();
+                await this.loadAllData();
+                this.startAutoRefresh();
                 this.showSuccess('登入成功！');
             } else {
                 throw new Error(result.error);
@@ -124,12 +141,13 @@ class PopupManager {
     // 處理登出
     async handleLogout() {
         try {
-            this.showLoading(true);
-            
+            this.showLoading(true, '正在登出...');
+
             const result = await window.authManager.logout();
             
             if (result.success) {
                 this.clearRefreshInterval();
+                this.clearAutoRefresh();
                 await this.showLoginSection();
                 this.showSuccess('已登出');
             } else {
@@ -144,22 +162,43 @@ class PopupManager {
         }
     }
 
-    // 處理重新整理
-    async handleRefresh() {
+
+
+    // 並行載入所有資料
+    async loadAllData() {
         try {
-            this.showLoading(true);
-            await this.loadAttendanceData();
-            this.showSuccess('資料已更新');
+            this.showLoading(true, '正在載入資料...');
+
+            // 並行執行兩個 API 呼叫
+            const [attendanceResult, abnormalResult] = await Promise.allSettled([
+                this.loadAttendanceData(false), // 不顯示載入遮罩
+                this.loadAbnormalData(false)    // 不顯示載入遮罩
+            ]);
+
+            // 處理今日出勤資料結果
+            if (attendanceResult.status === 'fulfilled') {
+                console.log('今日出勤資料載入成功');
+            } else {
+                console.error('今日出勤資料載入失敗:', attendanceResult.reason);
+            }
+
+            // 處理異常記錄資料結果
+            if (abnormalResult.status === 'fulfilled') {
+                console.log('異常記錄資料載入成功');
+            } else {
+                console.error('異常記錄資料載入失敗:', abnormalResult.reason);
+            }
+
         } catch (error) {
-            console.error('重新整理錯誤:', error);
-            this.showError(error.message);
+            console.error('載入資料錯誤:', error);
+            this.showError('載入資料失敗: ' + error.message);
         } finally {
             this.showLoading(false);
         }
     }
 
     // 載入出勤資料
-    async loadAttendanceData() {
+    async loadAttendanceData(showLoading = true) {
         try {
             const serverKey = window.authManager.getServerKey();
             if (!serverKey) {
@@ -241,6 +280,151 @@ class PopupManager {
         }
     }
 
+    // 處理選項卡切換
+    handleTabSwitch(tabName) {
+        if (this.currentTab === tabName) return;
+
+        this.currentTab = tabName;
+
+        // 更新選項卡按鈕狀態
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        tabButtons.forEach(btn => {
+            if (btn.dataset.tab === tabName) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        // 更新內容區域顯示
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabContents.forEach(content => {
+            if (content.id === `${tabName}Content`) {
+                content.classList.add('active');
+            } else {
+                content.classList.remove('active');
+            }
+        });
+
+        // 如果切換到異常記錄頁面，直接顯示已快取的資料
+        if (tabName === 'abnormal') {
+            console.log('切換到異常記錄頁面，異常資料:', this.abnormalData);
+            // 如果已有異常資料（包括空陣列），直接顯示
+            if (this.abnormalData !== null && Array.isArray(this.abnormalData)) {
+                this.updateAbnormalDisplay(this.abnormalData);
+            } else {
+                // 如果還沒有資料，可能是首次載入還在進行中
+                const abnormalList = document.getElementById('abnormalList');
+                if (abnormalList) {
+                    abnormalList.innerHTML = '<div class="loading-message">正在載入異常記錄...</div>';
+                }
+                // 如果資料還沒載入，主動載入一次
+                this.loadAbnormalData(true);
+            }
+        }
+    }
+
+    // 載入異常記錄資料
+    async loadAbnormalData(showLoading = true) {
+        try {
+            const serverKey = window.authManager.getServerKey();
+            if (!serverKey) {
+                console.warn('缺少認證金鑰，無法載入異常記錄');
+                return;
+            }
+
+            // 根據參數決定是否顯示載入遮罩
+            if (showLoading && this.currentTab === 'abnormal') {
+                this.showLoading(true, '正在載入異常記錄...');
+            }
+
+            const result = await window.apiManager.getAbnormalAttendance(serverKey);
+
+            if (result.success) {
+                this.abnormalData = window.apiManager.parseAbnormalAttendance(result.data);
+                this.abnormalCount = this.abnormalData.length;
+                this.updateAbnormalBadge();
+
+                // 如果當前在異常記錄頁面，更新顯示
+                if (this.currentTab === 'abnormal') {
+                    this.updateAbnormalDisplay(this.abnormalData);
+                }
+            } else {
+                console.error('載入異常記錄失敗:', result.error);
+            }
+
+        } catch (error) {
+            console.error('載入異常記錄錯誤:', error);
+        } finally {
+            // 根據參數決定是否隱藏載入遮罩
+            if (showLoading && this.currentTab === 'abnormal') {
+                this.showLoading(false);
+            }
+        }
+    }
+
+    // 更新異常記錄徽章
+    updateAbnormalBadge() {
+        const badge = document.getElementById('abnormalBadge');
+        if (!badge) return;
+
+        if (this.abnormalCount > 0) {
+            // 更新數字顯示
+            const badgeCount = badge.querySelector('.badge-count');
+            if (badgeCount) {
+                badgeCount.textContent = this.abnormalCount;
+            }
+            badge.style.display = 'inline-flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    // 更新異常記錄顯示
+    updateAbnormalDisplay(abnormalData) {
+        const abnormalList = document.getElementById('abnormalList');
+        if (!abnormalList) return;
+
+        if (!abnormalData || abnormalData.length === 0) {
+            abnormalList.innerHTML = '<div class="no-abnormal-data">🎉 恭喜！過去45天內沒有出勤異常記錄</div>';
+            return;
+        }
+
+        let html = '';
+        abnormalData.forEach(record => {
+            html += `
+                <div class="abnormal-item">
+                    <div class="abnormal-date">
+                        <span class="date">${record.date}</span>
+                        <span class="status status-abnormal">${record.status}</span>
+                    </div>
+                    <div class="abnormal-details">
+                        <div class="time-info">
+                            <span class="time-label">上班:</span>
+                            <span class="time-value">${window.apiManager.formatTime(record.punchIn)}</span>
+                            <span class="time-label">下班:</span>
+                            <span class="time-value">${window.apiManager.formatTime(record.punchOut)}</span>
+                        </div>
+                        <div class="work-hours">
+                            <span class="work-hours-label">工作時間:</span>
+                            <span class="work-hours-value">${record.workHours}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        abnormalList.innerHTML = html;
+    }
+
+    // 格式化日期為輸入框格式 (YYYY-MM-DD)
+    formatDateForInput(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
     // 更新狀態指示器
     updateStatusIndicator(isConnected) {
         const indicator = document.getElementById('statusIndicator');
@@ -277,7 +461,10 @@ class PopupManager {
     async showAttendanceSection() {
         this.hideElement('loginSection');
         this.showElement('attendanceSection');
-        
+
+        // 初始化選項卡（預設顯示今日出勤）
+        this.handleTabSwitch('today');
+
         // 開始定期更新
         this.startRefreshInterval();
     }
@@ -314,14 +501,75 @@ class PopupManager {
             clearInterval(this.refreshInterval);
             this.refreshInterval = null;
         }
+        if (this.autoRefreshInterval) {
+            clearInterval(this.autoRefreshInterval);
+            this.autoRefreshInterval = null;
+        }
     }
 
-    // 顯示載入中
-    showLoading(show) {
+    // 開始自動更新（每 5 分鐘）
+    startAutoRefresh() {
+        this.clearAutoRefresh();
+
+        // 每 5 分鐘自動更新所有資料
+        this.autoRefreshInterval = setInterval(async () => {
+            try {
+                console.log('自動更新資料...');
+                await this.loadAllDataSilently();
+                console.log('自動更新完成');
+            } catch (error) {
+                console.error('自動更新失敗:', error);
+            }
+        }, 5 * 60 * 1000); // 5 分鐘
+    }
+
+    // 清除自動更新
+    clearAutoRefresh() {
+        if (this.autoRefreshInterval) {
+            clearInterval(this.autoRefreshInterval);
+            this.autoRefreshInterval = null;
+        }
+    }
+
+    // 靜默載入所有資料（不顯示載入遮罩）
+    async loadAllDataSilently() {
+        try {
+            // 並行執行兩個 API 呼叫，不顯示載入遮罩
+            const [attendanceResult, abnormalResult] = await Promise.allSettled([
+                this.loadAttendanceData(false),
+                this.loadAbnormalData(false)
+            ]);
+
+            // 更新當前顯示的內容
+            if (this.currentTab === 'today' && attendanceResult.status === 'fulfilled') {
+                // 今日出勤頁面會自動更新
+            }
+
+            if (this.currentTab === 'abnormal' && abnormalResult.status === 'fulfilled') {
+                // 異常記錄頁面會自動更新
+            }
+
+        } catch (error) {
+            console.error('靜默載入資料錯誤:', error);
+        }
+    }
+
+    // 顯示載入遮罩
+    showLoading(show, message = '載入中...') {
+        const overlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+
         if (show) {
-            this.showElement('loading');
+            if (loadingText) {
+                loadingText.textContent = message;
+            }
+            if (overlay) {
+                overlay.style.display = 'flex';
+            }
         } else {
-            this.hideElement('loading');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
         }
     }
 

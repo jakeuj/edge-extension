@@ -27,7 +27,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 .then(result => sendResponse(result))
                 .catch(error => sendResponse({ success: false, error: error.message }));
             return true;
-            
+
+        case 'getHistoryAttendance':
+            handleGetHistoryAttendance(request.serverKey, request.startDate, request.endDate)
+                .then(result => sendResponse(result))
+                .catch(error => sendResponse({ success: false, error: error.message }));
+            return true;
+
         case 'logout':
             handleLogout()
                 .then(result => sendResponse(result))
@@ -139,6 +145,58 @@ async function handleGetAttendance(serverKey) {
         console.error('取得出勤資料錯誤:', error);
         return { 
             success: false, 
+            error: '網路連線錯誤，請稍後再試'
+        };
+    }
+}
+
+// 處理取得歷史出勤資訊
+async function handleGetHistoryAttendance(serverKey, startDate, endDate) {
+    try {
+        if (!startDate || !endDate) {
+            return {
+                success: false,
+                error: '請指定查詢日期範圍'
+            };
+        }
+
+        const response = await fetch('https://eipapi.gigabyte.com.tw/GEIP_API/api/getAttendanceInfo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'serverkey': serverKey
+            },
+            body: JSON.stringify({
+                startDate: startDate,
+                endDate: endDate,
+                status: "ALL",
+                employeeId: "",
+                deptId: "",
+                lineType: "",
+                group: "",
+                includeSubDept: false
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.statusCode === 200 && data.result) {
+            return {
+                success: true,
+                data: data.result,
+                message: '歷史出勤資料取得成功'
+            };
+        } else {
+            return {
+                success: false,
+                error: data.message || '無法取得歷史出勤資料'
+            };
+        }
+    } catch (error) {
+        console.error('取得歷史出勤資料錯誤:', error);
+        return {
+            success: false,
             error: '網路連線錯誤，請稍後再試'
         };
     }

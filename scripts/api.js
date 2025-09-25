@@ -17,7 +17,7 @@ class ApiManager {
             // 如果沒有指定日期，使用今天
             const today = new Date();
             const defaultDate = this.formatDate(today);
-            
+
             const requestData = {
                 startDate: startDate || defaultDate,
                 endDate: endDate || defaultDate,
@@ -46,6 +46,84 @@ class ApiManager {
             }
         } catch (error) {
             console.error('取得出勤資訊錯誤:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    // 取得異常出勤資訊（過去45天）
+    async getAbnormalAttendance(serverKey) {
+        try {
+            if (!serverKey) {
+                throw new Error('缺少認證金鑰，請重新登入');
+            }
+
+            // 計算過去45天的日期範圍
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(endDate.getDate() - 45);
+
+            const startDateStr = this.formatDate(startDate);
+            const endDateStr = this.formatDate(endDate);
+
+            // 發送請求到背景腳本
+            const response = await this.sendMessage({
+                action: 'getHistoryAttendance',
+                serverKey: serverKey,
+                startDate: startDateStr,
+                endDate: endDateStr
+            });
+
+            if (response.success) {
+                return {
+                    success: true,
+                    data: response.data,
+                    message: response.message
+                };
+            } else {
+                throw new Error(response.error || '無法取得異常出勤資料');
+            }
+        } catch (error) {
+            console.error('取得異常出勤資訊錯誤:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    // 取得歷史出勤資訊（保留原方法以維持相容性）
+    async getHistoryAttendance(serverKey, startDate, endDate) {
+        try {
+            if (!serverKey) {
+                throw new Error('缺少認證金鑰，請重新登入');
+            }
+
+            if (!startDate || !endDate) {
+                throw new Error('請指定查詢日期範圍');
+            }
+
+            // 發送請求到背景腳本
+            const response = await this.sendMessage({
+                action: 'getHistoryAttendance',
+                serverKey: serverKey,
+                startDate: startDate,
+                endDate: endDate
+            });
+
+            if (response.success) {
+                return {
+                    success: true,
+                    data: response.data,
+                    message: response.message
+                };
+            } else {
+                throw new Error(response.error || '無法取得歷史出勤資料');
+            }
+        } catch (error) {
+            console.error('取得歷史出勤資訊錯誤:', error);
             return {
                 success: false,
                 error: error.message
@@ -112,6 +190,82 @@ class ApiManager {
         }
 
         return todayRecord;
+    }
+
+    // 解析歷史出勤資料
+    parseHistoryAttendance(attendanceData) {
+        const historyRecords = [];
+
+        if (attendanceData && attendanceData.deptItemList) {
+            for (const dept of attendanceData.deptItemList) {
+                if (dept.employeeItemList) {
+                    for (const employee of dept.employeeItemList) {
+                        const record = {
+                            employeeId: employee.employeeId,
+                            name: employee.name,
+                            date: employee.date,
+                            status: employee.status,
+                            punchIn: employee.punchIn,
+                            punchOut: employee.punchOut,
+                            leaveTime: employee.leaveTime,
+                            holidayPunchIn: employee.holidayPunchIn,
+                            holidayPunchOut: employee.holidayPunchOut,
+                            deptName: dept.deptName,
+                            // 計算工作時間
+                            workHours: this.calculateWorkHours(employee.punchIn, employee.punchOut),
+                            // 格式化日期用於排序
+                            sortDate: this.parseRecordDate(employee.date)
+                        };
+                        historyRecords.push(record);
+                    }
+                }
+            }
+        }
+
+        // 按日期排序（最新的在前）
+        historyRecords.sort((a, b) => {
+            if (a.sortDate && b.sortDate) {
+                return new Date(b.sortDate) - new Date(a.sortDate);
+            }
+            return 0;
+        });
+
+        return historyRecords;
+    }
+
+    // 解析異常出勤資料（只保留異常記錄）
+    parseAbnormalAttendance(attendanceData) {
+        const allRecords = this.parseHistoryAttendance(attendanceData);
+
+        // 只保留狀態為「異常」的記錄
+        const abnormalRecords = allRecords.filter(record => {
+            return record.status === '異常';
+        });
+
+        return abnormalRecords;
+    }
+
+    // 計算工作時間
+    calculateWorkHours(punchIn, punchOut) {
+        if (!punchIn || !punchOut || punchIn === '--:--' || punchOut === '--:--') {
+            return '--:--';
+        }
+
+        try {
+            const inMinutes = this.parseTimeToMinutes(punchIn);
+            const outMinutes = this.parseTimeToMinutes(punchOut);
+
+            if (inMinutes !== null && outMinutes !== null && outMinutes > inMinutes) {
+                const workMinutes = outMinutes - inMinutes;
+                const hours = Math.floor(workMinutes / 60);
+                const minutes = workMinutes % 60;
+                return `${hours}小時${minutes}分鐘`;
+            }
+        } catch (error) {
+            console.error('計算工作時間錯誤:', error);
+        }
+
+        return '--:--';
     }
 
     // 解析記錄日期格式 (2025/09/24(二) -> 2025-09-24)
@@ -196,15 +350,149 @@ class ApiManager {
 
     // 發送訊息到背景腳本
     async sendMessage(message) {
-        return new Promise((resolve, reject) => {
-            chrome.runtime.sendMessage(message, (response) => {
-                if (chrome.runtime.lastError) {
-                    reject(new Error(chrome.runtime.lastError.message));
-                } else {
-                    resolve(response);
-                }
+        // 檢查是否在擴充套件環境中
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+            return new Promise((resolve, reject) => {
+                chrome.runtime.sendMessage(message, (response) => {
+                    if (chrome.runtime.lastError) {
+                        reject(new Error(chrome.runtime.lastError.message));
+                    } else {
+                        resolve(response);
+                    }
+                });
             });
-        });
+        } else {
+            // 開發環境模擬
+            console.warn('在開發環境中，無法使用 Chrome Extension API');
+            return this.simulateApiCall(message);
+        }
+    }
+
+    // 模擬 API 呼叫（用於開發測試）
+    async simulateApiCall(message) {
+        if (window.devLog) {
+            window.devLog('info', '模擬 API 呼叫:', message);
+        } else {
+            console.log('模擬 API 呼叫:', message);
+        }
+
+        // 使用配置中的延遲設定
+        const delay = window.DEV_CONFIG ? window.DEV_CONFIG.simulation.apiDelay : 1000;
+        await new Promise(resolve => setTimeout(resolve, delay));
+
+        switch (message.action) {
+            case 'getAttendance':
+                return {
+                    success: true,
+                    data: this.getMockTodayData(),
+                    message: '模擬今日出勤資料'
+                };
+
+            case 'getHistoryAttendance':
+                return {
+                    success: true,
+                    data: this.getMockHistoryData(),
+                    message: '模擬歷史出勤資料'
+                };
+
+            default:
+                return {
+                    success: false,
+                    error: '不支援的模擬操作'
+                };
+        }
+    }
+
+    // 取得模擬的今日資料
+    getMockTodayData() {
+        const today = new Date();
+        const dateString = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
+        const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+        const weekday = weekdays[today.getDay()];
+
+        return {
+            deptItemList: [{
+                deptId: "UI1G12",
+                deptName: "APP開發課",
+                employeeItemList: [{
+                    id: "0",
+                    employeeId: "TA210001",
+                    name: "測試用戶",
+                    date: `${dateString}(${weekday})`,
+                    status: "正常",
+                    punchIn: "09:15",
+                    punchOut: "--:--",
+                    leaveTime: "--:--",
+                    holidayPunchIn: "",
+                    holidayPunchOut: ""
+                }]
+            }]
+        };
+    }
+
+    // 取得模擬的歷史資料
+    getMockHistoryData() {
+        const mockData = {
+            deptItemList: [{
+                deptId: "UI1G12",
+                deptName: "APP開發課",
+                employeeItemList: []
+            }]
+        };
+
+        // 生成過去45天的模擬資料（包含一些異常記錄）
+        for (let i = 1; i <= 45; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            const dateString = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            const weekday = weekdays[date.getDay()];
+
+            // 跳過週末
+            if (date.getDay() === 0 || date.getDay() === 6) continue;
+
+            let punchInHour = 8 + Math.floor(Math.random() * 2); // 8-9點
+            let punchInMinute = Math.floor(Math.random() * 60);
+            let punchOutHour = 17 + Math.floor(Math.random() * 3); // 17-19點
+            let punchOutMinute = Math.floor(Math.random() * 60);
+
+            // 增加異常記錄的機率，讓測試更有意義
+            let status = "正常";
+            let punchInTime = `${String(punchInHour).padStart(2, '0')}:${String(punchInMinute).padStart(2, '0')}`;
+            let punchOutTime = `${String(punchOutHour).padStart(2, '0')}:${String(punchOutMinute).padStart(2, '0')}`;
+
+            // 30% 機率產生異常記錄
+            if (Math.random() > 0.7) {
+                status = "異常";
+                // 異常情況：遲到（9:30後上班）或早退（17:00前下班）
+                if (Math.random() > 0.5) {
+                    // 遲到情況
+                    punchInHour = 9 + Math.floor(Math.random() * 2); // 9-10點
+                    punchInMinute = 30 + Math.floor(Math.random() * 30); // 30-59分
+                    punchInTime = `${String(punchInHour).padStart(2, '0')}:${String(punchInMinute).padStart(2, '0')}`;
+                } else {
+                    // 早退情況
+                    punchOutHour = 15 + Math.floor(Math.random() * 2); // 15-16點
+                    punchOutMinute = Math.floor(Math.random() * 60);
+                    punchOutTime = `${String(punchOutHour).padStart(2, '0')}:${String(punchOutMinute).padStart(2, '0')}`;
+                }
+            }
+
+            mockData.deptItemList[0].employeeItemList.push({
+                id: i.toString(),
+                employeeId: "TA210001",
+                name: "測試用戶",
+                date: `${dateString}(${weekday})`,
+                status: status,
+                punchIn: punchInTime,
+                punchOut: punchOutTime,
+                leaveTime: punchOutTime,
+                holidayPunchIn: "",
+                holidayPunchOut: ""
+            });
+        }
+
+        return mockData;
     }
 
     // 檢查 serverKey 是否有效

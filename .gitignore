@@ -41,3 +41,10 @@ yarn-error.log*
 # 個人設定檔案
 config.local.js
 settings.local.json
+dev-config.js
+
+# 包含敏感資料的檔案
+**/credentials.js
+**/secrets.js
+**/.env
+**/.env.local
