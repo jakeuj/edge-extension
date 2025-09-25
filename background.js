@@ -2,7 +2,6 @@
 
 // 安裝時的初始化
 chrome.runtime.onInstalled.addListener(() => {
-    console.log('技嘉出勤時間追蹤器已安裝');
     
     // 設定預設值
     chrome.storage.local.set({
@@ -247,7 +246,6 @@ setInterval(async () => {
                 serverKey: null,
                 attendanceData: null
             });
-            console.log('登入已過期，已自動登出');
         }
     }
 }, 60 * 60 * 1000); // 每小時檢查一次

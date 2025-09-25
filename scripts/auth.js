@@ -34,12 +34,11 @@ class AuthManager {
 
                 return this.isLoggedIn;
             } else {
-                // 開發環境模擬 - 使用預設登入狀態
-                console.warn('在開發環境中，使用模擬認證狀態');
-                this.isLoggedIn = true;  // 預設為已登入
-                this.serverKey = 'mock_server_key_for_development';
-                this.loginTime = Date.now();
-                return true;  // 返回已登入狀態
+                // 非擴展環境，返回未登入狀態
+                this.isLoggedIn = false;
+                this.serverKey = null;
+                this.loginTime = null;
+                return false;
             }
         } catch (error) {
             console.error('初始化認證管理器失敗:', error);
@@ -122,8 +121,8 @@ class AuthManager {
                 const data = await chrome.storage.local.get(['savedAccount']);
                 return data.savedAccount || '';
             } else {
-                // 開發環境返回預設帳號
-                return window.DEV_CONFIG ? window.DEV_CONFIG.defaultCredentials.account : 'gigabyte\\mickey.tseng';
+                // 非擴展環境，返回空字串
+                return '';
             }
         } catch (error) {
             console.error('取得儲存帳號失敗:', error);
@@ -173,53 +172,12 @@ class AuthManager {
                 });
             });
         } else {
-            // 開發環境模擬
-            console.warn('在開發環境中，無法使用 Chrome Extension API');
-            return this.simulateAuthCall(message);
+            // 非擴展環境，返回錯誤
+            return Promise.reject(new Error('Chrome Extension API 不可用'));
         }
     }
 
-    // 模擬認證呼叫（用於開發測試）
-    async simulateAuthCall(message) {
-        if (window.devLog) {
-            window.devLog('info', '模擬認證呼叫:', message);
-        } else {
-            console.log('模擬認證呼叫:', message);
-        }
 
-        // 使用配置中的延遲設定
-        const delay = window.DEV_CONFIG ? window.DEV_CONFIG.simulation.loginDelay : 500;
-        await new Promise(resolve => setTimeout(resolve, delay));
-
-        switch (message.action) {
-            case 'login':
-                // 模擬登入成功
-                this.isLoggedIn = true;
-                this.serverKey = 'mock_server_key_for_development';
-                this.loginTime = Date.now();
-                return {
-                    success: true,
-                    serverKey: this.serverKey,
-                    message: '模擬登入成功'
-                };
-
-            case 'logout':
-                // 模擬登出
-                this.isLoggedIn = false;
-                this.serverKey = null;
-                this.loginTime = null;
-                return {
-                    success: true,
-                    message: '模擬登出成功'
-                };
-
-            default:
-                return {
-                    success: false,
-                    error: '不支援的模擬操作'
-                };
-        }
-    }
 
     // 驗證帳號格式
     validateAccountFormat(account) {

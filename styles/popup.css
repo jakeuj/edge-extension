@@ -1013,6 +1013,7 @@ body {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
+    max-height: calc(100vh - 120px);
 }
 
 .setting-group {
@@ -1033,6 +1034,28 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* 主題選擇器滾動條樣式 */
+.theme-selector::-webkit-scrollbar {
+    width: 6px;
+}
+
+.theme-selector::-webkit-scrollbar-track {
+    background: var(--theme-backgroundCard);
+    border-radius: 3px;
+}
+
+.theme-selector::-webkit-scrollbar-thumb {
+    background: var(--theme-border);
+    border-radius: 3px;
+}
+
+.theme-selector::-webkit-scrollbar-thumb:hover {
+    background: var(--theme-textMuted);
 }
 
 .theme-option {

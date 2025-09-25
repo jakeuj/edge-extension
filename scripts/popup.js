@@ -16,8 +16,6 @@ class PopupManager {
     // 初始化 popup
     async init() {
         try {
-            console.log('初始化 popup...');
-            
             // 等待所有模組載入
             await this.waitForModules();
 
@@ -40,7 +38,6 @@ class PopupManager {
             }
             
             this.isInitialized = true;
-            console.log('popup 初始化完成');
             
         } catch (error) {
             console.error('初始化 popup 失敗:', error);
@@ -133,12 +130,7 @@ class PopupManager {
             });
         }
 
-        const notificationsToggle = document.getElementById('notifications');
-        if (notificationsToggle) {
-            notificationsToggle.addEventListener('change', (e) => {
-                this.handleNotificationsToggle(e.target.checked);
-            });
-        }
+
 
         // 帳號輸入框自動完成
         const accountInput = document.getElementById('account');
@@ -244,17 +236,11 @@ class PopupManager {
                 this.loadAbnormalData(false)    // 不顯示載入遮罩
             ]);
 
-            // 處理今日出勤資料結果
-            if (attendanceResult.status === 'fulfilled') {
-                console.log('今日出勤資料載入成功');
-            } else {
+            // 處理載入結果
+            if (attendanceResult.status === 'rejected') {
                 console.error('今日出勤資料載入失敗:', attendanceResult.reason);
             }
-
-            // 處理異常記錄資料結果
-            if (abnormalResult.status === 'fulfilled') {
-                console.log('異常記錄資料載入成功');
-            } else {
+            if (abnormalResult.status === 'rejected') {
                 console.error('異常記錄資料載入失敗:', abnormalResult.reason);
             }
 
@@ -377,7 +363,7 @@ class PopupManager {
 
         // 如果切換到異常記錄頁面，直接顯示已快取的資料
         if (tabName === 'abnormal') {
-            console.log('切換到異常記錄頁面，異常資料:', this.abnormalData);
+
             // 如果已有異常資料（包括空陣列），直接顯示
             if (this.abnormalData !== null && Array.isArray(this.abnormalData)) {
                 this.updateAbnormalDisplay(this.abnormalData);
@@ -398,7 +384,6 @@ class PopupManager {
         try {
             const serverKey = window.authManager.getServerKey();
             if (!serverKey) {
-                console.warn('缺少認證金鑰，無法載入異常記錄');
                 return;
             }
 
@@ -597,9 +582,7 @@ class PopupManager {
         // 每 5 分鐘自動更新所有資料
         this.autoRefreshInterval = setInterval(async () => {
             try {
-                console.log('自動更新資料...');
                 await this.loadAllDataSilently();
-                console.log('自動更新完成');
             } catch (error) {
                 console.error('自動更新失敗:', error);
             }
@@ -674,7 +657,6 @@ class PopupManager {
 
     // 顯示成功訊息
     showSuccess(message) {
-        console.log('成功:', message);
         // 可以在這裡添加成功訊息的顯示邏輯
     }
 
@@ -712,8 +694,6 @@ class PopupManager {
 
             // 載入當前設定
             await this.loadCurrentSettings();
-
-            console.log('已切換到設定頁面');
         } catch (error) {
             console.error('顯示設定頁面失敗:', error);
             this.showError('載入設定失敗: ' + error.message);
@@ -739,8 +719,6 @@ class PopupManager {
             } else {
                 await this.showLoginSection();
             }
-
-            console.log('已返回主頁面');
         } catch (error) {
             console.error('返回主頁面失敗:', error);
             this.showError('返回失敗: ' + error.message);
@@ -770,11 +748,12 @@ class PopupManager {
                     if (autoRefreshToggle) {
                         autoRefreshToggle.checked = settings.autoRefresh !== false;
                     }
-
-                    // 更新通知設定
-                    const notificationsToggle = document.getElementById('notifications');
-                    if (notificationsToggle) {
-                        notificationsToggle.checked = settings.notifications !== false;
+                } else {
+                    console.warn('載入設定失敗，使用預設設定:', settingsResult.error);
+                    // 使用預設設定
+                    const autoRefreshToggle = document.getElementById('autoRefresh');
+                    if (autoRefreshToggle) {
+                        autoRefreshToggle.checked = true; // 預設開啟
                     }
                 }
             }
@@ -786,8 +765,6 @@ class PopupManager {
     // 處理主題變更
     async handleThemeChange(themeId) {
         try {
-            console.log('切換主題:', themeId);
-
             const success = await window.themeManager.switchTheme(themeId);
             if (success) {
                 this.updateThemeSelection(themeId);
@@ -845,8 +822,6 @@ class PopupManager {
     // 處理自動重新整理設定
     async handleAutoRefreshToggle(enabled) {
         try {
-            console.log('自動重新整理設定:', enabled);
-
             if (window.storageManager) {
                 const result = await window.storageManager.saveSettings({
                     autoRefresh: enabled
@@ -869,27 +844,7 @@ class PopupManager {
         }
     }
 
-    // 處理通知設定
-    async handleNotificationsToggle(enabled) {
-        try {
-            console.log('通知設定:', enabled);
 
-            if (window.storageManager) {
-                const result = await window.storageManager.saveSettings({
-                    notifications: enabled
-                });
-
-                if (result.success) {
-                    this.showSuccess(`通知提醒已${enabled ? '開啟' : '關閉'}`);
-                } else {
-                    this.showError('設定儲存失敗');
-                }
-            }
-        } catch (error) {
-            console.error('通知設定錯誤:', error);
-            this.showError('設定失敗: ' + error.message);
-        }
-    }
 
     // 更新元素內容
     updateElement(id, content) {

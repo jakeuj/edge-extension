@@ -8,27 +8,122 @@ class StorageManager {
             serverKey: 'serverKey',
             lastLoginTime: 'lastLoginTime',
             savedAccount: 'savedAccount',
-            
+
             // 出勤資料
             attendanceData: 'attendanceData',
             lastUpdateTime: 'lastUpdateTime',
             todayAttendance: 'todayAttendance',
-            
+
             // 設定
             autoRefresh: 'autoRefresh',
             refreshInterval: 'refreshInterval',
             notifications: 'notifications',
-            
+
             // 快取
             userProfile: 'userProfile',
             workingRules: 'workingRules'
         };
-        
+
         this.defaultSettings = {
             autoRefresh: true,
             refreshInterval: 60000, // 1 分鐘
             notifications: true
         };
+
+        // 檢查 Chrome Storage API 是否可用
+        this.isChromeStorageAvailable = this.checkChromeStorageAvailability();
+    }
+
+    // 檢查 Chrome Storage API 可用性
+    checkChromeStorageAvailability() {
+        try {
+            return !!(typeof chrome !== 'undefined' &&
+                     chrome.storage &&
+                     chrome.storage.local);
+        } catch (error) {
+            console.warn('Chrome Storage API 不可用，將使用 localStorage 作為回退方案');
+            return false;
+        }
+    }
+
+    // 統一的儲存方法
+    async setStorage(data) {
+        if (this.isChromeStorageAvailable) {
+            return await chrome.storage.local.set(data);
+        } else {
+            // 使用 localStorage 作為回退
+            Object.entries(data).forEach(([key, value]) => {
+                localStorage.setItem(key, JSON.stringify(value));
+            });
+            return Promise.resolve();
+        }
+    }
+
+    // 統一的讀取方法
+    async getStorage(keys) {
+        if (this.isChromeStorageAvailable) {
+            return await chrome.storage.local.get(keys);
+        } else {
+            // 使用 localStorage 作為回退
+            const result = {};
+            const keyArray = Array.isArray(keys) ? keys : [keys];
+            keyArray.forEach(key => {
+                const value = localStorage.getItem(key);
+                if (value !== null) {
+                    try {
+                        result[key] = JSON.parse(value);
+                    } catch (error) {
+                        result[key] = value;
+                    }
+                }
+            });
+            return Promise.resolve(result);
+        }
+    }
+
+    // 統一的清除方法
+    async removeStorage(keys) {
+        if (this.isChromeStorageAvailable) {
+            return await chrome.storage.local.remove(keys);
+        } else {
+            // 使用 localStorage 作為回退
+            const keyArray = Array.isArray(keys) ? keys : [keys];
+            keyArray.forEach(key => {
+                localStorage.removeItem(key);
+            });
+            return Promise.resolve();
+        }
+    }
+
+    // 統一的清除所有資料方法
+    async clearAllStorage() {
+        if (this.isChromeStorageAvailable) {
+            return await chrome.storage.local.clear();
+        } else {
+            // 使用 localStorage 作為回退
+            localStorage.clear();
+            return Promise.resolve();
+        }
+    }
+
+    // 統一的取得所有資料方法
+    async getAllStorage() {
+        if (this.isChromeStorageAvailable) {
+            return await chrome.storage.local.get(null);
+        } else {
+            // 使用 localStorage 作為回退
+            const result = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                try {
+                    result[key] = JSON.parse(value);
+                } catch (error) {
+                    result[key] = value;
+                }
+            }
+            return Promise.resolve(result);
+        }
     }
 
     // 儲存登入資訊
@@ -45,8 +140,7 @@ class StorageManager {
                 dataToSave[this.storageKeys.savedAccount] = loginData.account;
             }
 
-            await chrome.storage.local.set(dataToSave);
-            console.log('登入資訊已儲存');
+            await this.setStorage(dataToSave);
             
             return { success: true };
         } catch (error) {
@@ -65,7 +159,7 @@ class StorageManager {
                 this.storageKeys.savedAccount
             ];
             
-            const data = await chrome.storage.local.get(keys);
+            const data = await this.getStorage(keys);
             
             return {
                 success: true,
@@ -92,8 +186,7 @@ class StorageManager {
                 // 保留 savedAccount 除非用戶明確要求清除
             ];
             
-            await chrome.storage.local.remove(keysToClear);
-            console.log('登入資訊已清除');
+            await this.removeStorage(keysToClear);
             
             return { success: true };
         } catch (error) {
@@ -110,8 +203,7 @@ class StorageManager {
                 [this.storageKeys.lastUpdateTime]: Date.now()
             };
 
-            await chrome.storage.local.set(dataToSave);
-            console.log('出勤資料已儲存');
+            await this.setStorage(dataToSave);
             
             return { success: true };
         } catch (error) {
@@ -128,7 +220,7 @@ class StorageManager {
                 this.storageKeys.lastUpdateTime
             ];
             
-            const data = await chrome.storage.local.get(keys);
+            const data = await this.getStorage(keys);
             
             return {
                 success: true,
@@ -154,8 +246,7 @@ class StorageManager {
                 }
             };
 
-            await chrome.storage.local.set(dataToSave);
-            console.log('今日出勤資料已儲存');
+            await this.setStorage(dataToSave);
             
             return { success: true };
         } catch (error) {
@@ -167,7 +258,7 @@ class StorageManager {
     // 取得今日出勤資料
     async getTodayAttendance() {
         try {
-            const data = await chrome.storage.local.get([this.storageKeys.todayAttendance]);
+            const data = await this.getStorage([this.storageKeys.todayAttendance]);
             const todayData = data[this.storageKeys.todayAttendance];
             
             // 檢查是否為今日資料
@@ -193,11 +284,9 @@ class StorageManager {
         try {
             const settingsToSave = { ...this.defaultSettings, ...settings };
             
-            await chrome.storage.local.set({
+            await this.setStorage({
                 userSettings: settingsToSave
             });
-            
-            console.log('使用者設定已儲存');
             return { success: true };
         } catch (error) {
             console.error('儲存使用者設定失敗:', error);
@@ -208,7 +297,7 @@ class StorageManager {
     // 取得使用者設定
     async getSettings() {
         try {
-            const data = await chrome.storage.local.get(['userSettings']);
+            const data = await this.getStorage(['userSettings']);
             const settings = data.userSettings || this.defaultSettings;
             
             return {
@@ -228,14 +317,12 @@ class StorageManager {
     // 儲存使用者資料
     async saveUserProfile(profile) {
         try {
-            await chrome.storage.local.set({
+            await this.setStorage({
                 [this.storageKeys.userProfile]: {
                     ...profile,
                     lastUpdated: Date.now()
                 }
             });
-            
-            console.log('使用者資料已儲存');
             return { success: true };
         } catch (error) {
             console.error('儲存使用者資料失敗:', error);
@@ -246,7 +333,7 @@ class StorageManager {
     // 取得使用者資料
     async getUserProfile() {
         try {
-            const data = await chrome.storage.local.get([this.storageKeys.userProfile]);
+            const data = await this.getStorage([this.storageKeys.userProfile]);
             
             return {
                 success: true,
@@ -261,8 +348,7 @@ class StorageManager {
     // 清除所有資料
     async clearAllData() {
         try {
-            await chrome.storage.local.clear();
-            console.log('所有資料已清除');
+            await this.clearAllStorage();
             
             return { success: true };
         } catch (error) {
@@ -274,7 +360,7 @@ class StorageManager {
     // 取得儲存空間使用情況
     async getStorageUsage() {
         try {
-            const data = await chrome.storage.local.get(null);
+            const data = await this.getAllStorage();
             const usage = {
                 totalItems: Object.keys(data).length,
                 totalSize: JSON.stringify(data).length,
@@ -313,7 +399,7 @@ class StorageManager {
     // 清理過期資料
     async cleanupExpiredData() {
         try {
-            const data = await chrome.storage.local.get(null);
+            const data = await this.getAllStorage();
             const keysToRemove = [];
             
             for (const [key, value] of Object.entries(data)) {
@@ -328,8 +414,7 @@ class StorageManager {
             }
             
             if (keysToRemove.length > 0) {
-                await chrome.storage.local.remove(keysToRemove);
-                console.log(`已清理 ${keysToRemove.length} 個過期項目:`, keysToRemove);
+                await this.removeStorage(keysToRemove);
             }
             
             return {
@@ -345,7 +430,7 @@ class StorageManager {
     // 匯出資料
     async exportData() {
         try {
-            const data = await chrome.storage.local.get(null);
+            const data = await this.getAllStorage();
             
             // 移除敏感資訊
             const exportData = { ...data };

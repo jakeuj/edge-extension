@@ -130,16 +130,13 @@ class ThemeManager {
     // 初始化主題管理器
     async init() {
         try {
-            console.log('初始化主題管理器...');
-            
             // 從儲存中載入主題設定
             await this.loadThemeFromStorage();
-            
+
             // 應用當前主題
             this.applyTheme(this.currentTheme);
-            
+
             this.isInitialized = true;
-            console.log('主題管理器初始化完成，當前主題:', this.currentTheme);
             
             return true;
         } catch (error) {
@@ -160,9 +157,6 @@ class ThemeManager {
                 
                 if (savedTheme && this.themes[savedTheme]) {
                     this.currentTheme = savedTheme;
-                    console.log('從儲存載入主題:', savedTheme);
-                } else {
-                    console.log('使用預設主題: light');
                 }
             } else {
                 // 開發環境，使用 localStorage
@@ -183,7 +177,6 @@ class ThemeManager {
                 await chrome.storage.local.set({
                     [this.storageKey]: themeId
                 });
-                console.log('主題設定已儲存:', themeId);
             } else {
                 // 開發環境，使用 localStorage
                 localStorage.setItem(this.storageKey, themeId);
@@ -201,8 +194,6 @@ class ThemeManager {
         }
 
         try {
-            console.log('切換主題:', themeId);
-            
             // 更新當前主題
             this.currentTheme = themeId;
             
@@ -239,8 +230,6 @@ class ThemeManager {
         Object.entries(theme.colors).forEach(([key, value]) => {
             root.style.setProperty(`--theme-${key}`, value);
         });
-        
-        console.log('已應用主題:', theme.name);
     }
 
     // 取得當前主題
