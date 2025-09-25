@@ -289,12 +289,15 @@ body {
 }
 
 .info-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     background: var(--theme-backgroundCard);
     border-radius: 8px;
     padding: 20px;
-    margin-bottom: 16px;
     transition: all 0.3s ease;
     box-shadow: 0 2px 6px var(--theme-shadow);
+    height: 100%;
 }
 
 .info-card h3 {
@@ -391,7 +394,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
     pointer-events: none;
 }
 
@@ -1287,8 +1290,12 @@ input:checked + .slider:before {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes slideIn {
