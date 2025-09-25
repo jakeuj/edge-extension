@@ -77,6 +77,42 @@
     --theme-shadowHover: rgba(124, 58, 237, 0.4);
 }
 
+/* 莫蘭迪色系主題變數 */
+[data-theme="morandi"] {
+    /* 主要顏色 - 柔和的藍灰色 */
+    --theme-primary: #8b9dc3;
+    --theme-primaryGradient: linear-gradient(135deg, #8b9dc3 0%, #a8b5d1 100%);
+
+    /* 背景顏色 - 溫暖的米白色調 */
+    --theme-background: #f7f5f3;
+    --theme-backgroundSecondary: #f0ede8;
+    --theme-backgroundCard: #faf8f5;
+
+    /* 文字顏色 - 深灰色而非純黑 */
+    --theme-textPrimary: #4a4a4a;
+    --theme-textSecondary: #6b6b6b;
+    --theme-textMuted: #9a9a9a;
+    --theme-textInverse: #f7f5f3;
+
+    /* 邊框顏色 - 柔和的灰色調 */
+    --theme-border: #d4cfc7;
+    --theme-borderLight: #e6e1d8;
+
+    /* 狀態顏色 - 莫蘭迪風格的柔和色彩 */
+    --theme-success: #a8c4a2;
+    --theme-warning: #d4b896;
+    --theme-error: #c4a2a2;
+    --theme-info: #a2b8c4;
+
+    /* 互動顏色 - 柔和的藍灰色調 */
+    --theme-hover: rgba(139, 157, 195, 0.15);
+    --theme-active: rgba(139, 157, 195, 0.25);
+
+    /* 陰影 - 柔和的陰影效果 */
+    --theme-shadow: rgba(74, 74, 74, 0.08);
+    --theme-shadowHover: rgba(139, 157, 195, 0.2);
+}
+
 body {
     font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 14px;
@@ -1056,6 +1092,20 @@ body {
 .dark-preview .preview-content {
     height: 24px;
     background: #333333;
+}
+
+.morandi-preview {
+    background: #f7f5f3;
+}
+
+.morandi-preview .preview-header {
+    height: 12px;
+    background: linear-gradient(135deg, #8b9dc3 0%, #a8b5d1 100%);
+}
+
+.morandi-preview .preview-content {
+    height: 24px;
+    background: #faf8f5;
 }
 
 .theme-info {

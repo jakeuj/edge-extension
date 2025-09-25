@@ -50,35 +50,74 @@ class ThemeManager {
                     // 主要顏色
                     primary: '#7c3aed',
                     primaryGradient: 'linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%)',
-                    
+
                     // 背景顏色
                     background: '#1a1a1a',
                     backgroundSecondary: '#2d2d2d',
                     backgroundCard: '#333333',
-                    
+
                     // 文字顏色
                     textPrimary: '#ffffff',
                     textSecondary: '#cccccc',
                     textMuted: '#888888',
                     textInverse: '#1a1a1a',
-                    
+
                     // 邊框顏色
                     border: '#444444',
                     borderLight: '#555555',
-                    
+
                     // 狀態顏色
                     success: '#10b981',
                     warning: '#f59e0b',
                     error: '#ef4444',
                     info: '#06b6d4',
-                    
+
                     // 互動顏色
                     hover: 'rgba(124, 58, 237, 0.2)',
                     active: 'rgba(124, 58, 237, 0.3)',
-                    
+
                     // 陰影
                     shadow: 'rgba(0, 0, 0, 0.3)',
                     shadowHover: 'rgba(124, 58, 237, 0.4)'
+                }
+            },
+            morandi: {
+                name: '莫蘭迪色系',
+                id: 'morandi',
+                description: '柔和優雅的低飽和度主題',
+                colors: {
+                    // 主要顏色 - 柔和的藍灰色
+                    primary: '#8b9dc3',
+                    primaryGradient: 'linear-gradient(135deg, #8b9dc3 0%, #a8b5d1 100%)',
+
+                    // 背景顏色 - 溫暖的米白色調
+                    background: '#f7f5f3',
+                    backgroundSecondary: '#f0ede8',
+                    backgroundCard: '#faf8f5',
+
+                    // 文字顏色 - 深灰色而非純黑
+                    textPrimary: '#4a4a4a',
+                    textSecondary: '#6b6b6b',
+                    textMuted: '#9a9a9a',
+                    textInverse: '#f7f5f3',
+
+                    // 邊框顏色 - 柔和的灰色調
+                    border: '#d4cfc7',
+                    borderLight: '#e6e1d8',
+
+                    // 狀態顏色 - 莫蘭迪風格的柔和色彩
+                    success: '#a8c4a2',
+                    warning: '#d4b896',
+                    error: '#c4a2a2',
+                    info: '#a2b8c4',
+
+                    // 互動顏色 - 柔和的藍灰色調
+                    hover: 'rgba(139, 157, 195, 0.15)',
+                    active: 'rgba(139, 157, 195, 0.25)',
+
+                    // 陰影 - 柔和的陰影效果
+                    shadow: 'rgba(74, 74, 74, 0.08)',
+                    shadowHover: 'rgba(139, 157, 195, 0.2)'
                 }
             }
         };
