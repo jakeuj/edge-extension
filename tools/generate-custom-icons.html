@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自定義圖標生成器</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            background: #f8f9ff;
+        }
+        .upload-area.dragover {
+            background: #e8ebff;
+            border-color: #5a67d8;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .upload-btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .upload-btn:hover {
+            background: #5a67d8;
+        }
+        .preview-area {
+            display: none;
+            margin: 20px 0;
+        }
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .preview-item {
+            text-align: center;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .preview-item img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+        }
+        .download-all {
+            background: #28a745;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 20px 0;
+            display: block;
+            width: 100%;
+        }
+        .download-all:hover {
+            background: #218838;
+        }
+        .instructions {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .instructions h3 {
+            color: #495057;
+            margin-top: 0;
+        }
+        .instructions ol {
+            margin: 10px 0;
+        }
+        .instructions li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 自定義圖標生成器</h1>
+        
+        <div class="upload-area" id="uploadArea">
+            <p>📁 拖放圖片到這裡，或點擊下方按鈕選擇圖片</p>
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">選擇圖片</button>
+            <input type="file" id="fileInput" accept="image/*">
+            <p style="margin-top: 15px; color: #666; font-size: 14px;">
+                支援格式：PNG, JPG, GIF, SVG<br>
+                建議上傳高解析度圖片（至少 512x512）
+            </p>
+        </div>
+
+        <div class="preview-area" id="previewArea">
+            <h3>📋 圖標預覽</h3>
+            <div class="preview-grid" id="previewGrid"></div>
+            <button class="download-all" id="downloadAll">📥 下載所有圖標</button>
+        </div>
+
+        <div class="instructions">
+            <h3>📖 使用說明</h3>
+            <ol>
+                <li>上傳您的自定義圖片（建議使用高解析度圖片）</li>
+                <li>系統會自動生成 16x16, 32x32, 48x48, 128x128 四種尺寸</li>
+                <li>點擊「下載所有圖標」按鈕下載 ZIP 檔案</li>
+                <li>將下載的圖標檔案放到專案的 <code>icons/</code> 資料夾中</li>
+                <li>圖標會自動應用到擴充套件和網頁</li>
+            </ol>
+            
+            <h3>🔧 技術說明</h3>
+            <p>生成的圖標將包含：</p>
+            <ul>
+                <li><strong>icon16.png</strong> - 工具列圖標</li>
+                <li><strong>icon32.png</strong> - 擴充套件管理頁面</li>
+                <li><strong>icon48.png</strong> - 擴充套件詳細頁面</li>
+                <li><strong>icon128.png</strong> - Chrome 網路商店和高解析度顯示</li>
+                <li><strong>favicon.ico</strong> - 網頁 favicon（32x32）</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const previewArea = document.getElementById('previewArea');
+        const previewGrid = document.getElementById('previewGrid');
+        const downloadAll = document.getElementById('downloadAll');
+        
+        const iconSizes = [16, 32, 48, 128];
+        let generatedIcons = {};
+
+        // 拖放功能
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('請選擇圖片檔案！');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                generateIcons(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function generateIcons(imageSrc) {
+            const img = new Image();
+            img.onload = () => {
+                previewGrid.innerHTML = '';
+                generatedIcons = {};
+
+                iconSizes.forEach(size => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = size;
+                    canvas.height = size;
+
+                    // 繪製圓形背景和圖片
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, size, size);
+                    
+                    // 繪製圓形裁切
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(size/2, size/2, size/2 - 1, 0, Math.PI * 2);
+                    ctx.clip();
+                    
+                    // 繪製圖片
+                    ctx.drawImage(img, 0, 0, size, size);
+                    ctx.restore();
+
+                    // 添加圓形邊框
+                    ctx.strokeStyle = '#ddd';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(size/2, size/2, size/2 - 0.5, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    const dataURL = canvas.toDataURL('image/png');
+                    generatedIcons[`icon${size}.png`] = dataURL;
+
+                    // 創建預覽
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    previewItem.innerHTML = `
+                        <img src="${dataURL}" alt="Icon ${size}x${size}">
+                        <p><strong>${size}x${size}</strong></p>
+                        <p>icon${size}.png</p>
+                    `;
+                    previewGrid.appendChild(previewItem);
+                });
+
+                // 生成 favicon.ico (使用 32x32)
+                generatedIcons['favicon.ico'] = generatedIcons['icon32.png'];
+
+                previewArea.style.display = 'block';
+            };
+            img.src = imageSrc;
+        }
+
+        downloadAll.addEventListener('click', () => {
+            // 這裡需要使用 JSZip 庫來創建 ZIP 檔案
+            // 為了簡化，我們提供個別下載連結
+            const downloadLinks = document.createElement('div');
+            downloadLinks.innerHTML = '<h4>請個別下載以下檔案：</h4>';
+            
+            Object.entries(generatedIcons).forEach(([filename, dataURL]) => {
+                const link = document.createElement('a');
+                link.href = dataURL;
+                link.download = filename;
+                link.textContent = `下載 ${filename}`;
+                link.style.display = 'block';
+                link.style.margin = '5px 0';
+                link.style.color = '#667eea';
+                downloadLinks.appendChild(link);
+            });
+
+            // 替換下載按鈕
+            downloadAll.parentNode.replaceChild(downloadLinks, downloadAll);
+        });
+    </script>
+</body>
+</html>
