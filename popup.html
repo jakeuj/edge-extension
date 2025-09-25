@@ -86,7 +86,7 @@
 
                 <!-- 預計時間資訊區塊 -->
                 <div class="info-section expected-time">
-                    <div class="info-row highlight">
+                    <div class="info-row">
                         <span class="label">預計下班:</span>
                         <span class="value" id="expectedClockOut">--:--</span>
                     </div>
@@ -198,6 +198,23 @@
     <div class="error-message" id="errorMessage" style="display: none;">
         <span class="error-text"></span>
         <button class="btn-close" onclick="hideError()">×</button>
+    </div>
+
+    <!-- 確認對話框 -->
+    <div class="confirm-overlay" id="confirmOverlay" style="display: none;">
+        <div class="confirm-dialog">
+            <div class="confirm-header">
+                <i class="fas fa-question-circle confirm-icon"></i>
+                <h3 class="confirm-title">確認登出</h3>
+            </div>
+            <div class="confirm-content">
+                <p class="confirm-message">您確定要登出嗎？</p>
+            </div>
+            <div class="confirm-actions">
+                <button class="btn-secondary confirm-cancel" id="confirmCancel">取消</button>
+                <button class="btn-secondary confirm-ok" id="confirmOk">確定登出</button>
+            </div>
+        </div>
     </div>
 </div>
 

@@ -10,6 +10,7 @@ class PopupManager {
         this.abnormalData = [];
         this.abnormalCount = 0;
         this.isInSettingsPage = false; // 追蹤是否在設定頁面
+        this.confirmCallback = null; // 確認對話框回調函數
     }
 
     // 初始化 popup
@@ -89,6 +90,16 @@ class PopupManager {
         const backBtn = document.getElementById('backBtn');
         if (backBtn) {
             backBtn.addEventListener('click', () => this.handleBackFromSettings());
+        }
+
+        // 確認對話框按鈕
+        const confirmCancel = document.getElementById('confirmCancel');
+        const confirmOk = document.getElementById('confirmOk');
+        if (confirmCancel) {
+            confirmCancel.addEventListener('click', () => this.hideConfirmDialog());
+        }
+        if (confirmOk) {
+            confirmOk.addEventListener('click', () => this.handleConfirmOk());
         }
 
         // 主題選擇器
@@ -195,26 +206,29 @@ class PopupManager {
 
     // 處理登出
     async handleLogout() {
-        try {
-            this.showLoading(true, '正在登出...');
+        // 顯示確認對話框
+        this.showConfirmDialog('確認登出', '您確定要登出嗎？', async () => {
+            try {
+                this.showLoading(true, '正在登出...');
 
-            const result = await window.authManager.logout();
-            
-            if (result.success) {
-                this.clearRefreshInterval();
-                this.clearAutoRefresh();
-                await this.showLoginSection();
-                this.showSuccess('已登出');
-            } else {
-                throw new Error(result.error);
+                const result = await window.authManager.logout();
+
+                if (result.success) {
+                    this.clearRefreshInterval();
+                    this.clearAutoRefresh();
+                    await this.showLoginSection();
+                    this.showSuccess('已登出');
+                } else {
+                    throw new Error(result.error);
+                }
+
+            } catch (error) {
+                console.error('登出錯誤:', error);
+                this.showError(error.message);
+            } finally {
+                this.showLoading(false);
             }
-            
-        } catch (error) {
-            console.error('登出錯誤:', error);
-            this.showError(error.message);
-        } finally {
-            this.showLoading(false);
-        }
+        });
     }
 
 
@@ -899,6 +913,35 @@ class PopupManager {
         if (element) {
             element.style.display = 'none';
         }
+    }
+
+    // 顯示確認對話框
+    showConfirmDialog(title, message, onConfirm) {
+        this.confirmCallback = onConfirm;
+
+        // 更新對話框內容
+        const titleElement = document.querySelector('.confirm-title');
+        const messageElement = document.querySelector('.confirm-message');
+
+        if (titleElement) titleElement.textContent = title;
+        if (messageElement) messageElement.textContent = message;
+
+        // 顯示對話框
+        this.showElement('confirmOverlay');
+    }
+
+    // 隱藏確認對話框
+    hideConfirmDialog() {
+        this.hideElement('confirmOverlay');
+        this.confirmCallback = null;
+    }
+
+    // 處理確認按鈕點擊
+    handleConfirmOk() {
+        if (this.confirmCallback) {
+            this.confirmCallback();
+        }
+        this.hideConfirmDialog();
     }
 }
 

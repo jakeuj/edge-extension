@@ -1186,6 +1186,122 @@ input:checked + .slider:before {
     transform: translateX(20px);
 }
 
+/* 確認對話框樣式 */
+.confirm-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    border-radius: 8px;
+    animation: fadeIn 0.3s ease;
+}
+
+.confirm-dialog {
+    background: var(--theme-background);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px var(--theme-shadow);
+    width: 320px;
+    max-width: 90%;
+    overflow: hidden;
+    animation: slideIn 0.3s ease;
+}
+
+.confirm-header {
+    background: var(--theme-backgroundCard);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--theme-borderLight);
+}
+
+.confirm-icon {
+    font-size: 20px;
+    color: var(--theme-warning);
+}
+
+.confirm-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--theme-textPrimary);
+    margin: 0;
+}
+
+.confirm-content {
+    padding: 20px;
+}
+
+.confirm-message {
+    font-size: 14px;
+    color: var(--theme-textSecondary);
+    margin: 0;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.confirm-actions {
+    padding: 16px 20px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    background: var(--theme-backgroundCard);
+    border-top: 1px solid var(--theme-borderLight);
+}
+
+.confirm-actions .btn-secondary,
+.confirm-actions .btn-primary {
+    width: auto;
+    padding: 8px 16px;
+    font-size: 13px;
+    min-width: 80px;
+}
+
+.confirm-cancel {
+    background: var(--theme-backgroundCard);
+    color: var(--theme-textSecondary);
+    border: 1px solid var(--theme-border);
+}
+
+.confirm-cancel:hover {
+    background: var(--theme-hover);
+    color: var(--theme-textPrimary);
+}
+
+.confirm-ok {
+    background: var(--theme-error);
+    color: var(--theme-textInverse);
+}
+
+.confirm-ok:hover {
+    background: var(--theme-error);
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 /* 響應式調整 */
 @media (max-width: 400px) {
     .container {
@@ -1201,5 +1317,18 @@ input:checked + .slider:before {
     .theme-preview {
         width: 40px;
         height: 30px;
+    }
+
+    .confirm-dialog {
+        width: 280px;
+    }
+
+    .confirm-actions {
+        flex-direction: column;
+    }
+
+    .confirm-actions .btn-secondary,
+    .confirm-actions .btn-primary {
+        width: 100%;
     }
 }
