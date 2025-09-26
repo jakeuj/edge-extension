@@ -1,5 +1,18 @@
 // 主要 popup 腳本 - 整合所有功能並處理使用者介面
 
+// 翻頁時鐘初始化函數
+function handleFlipClockInit(tick) {
+    // 儲存翻頁時鐘實例
+    window.flipClockInstance = tick;
+
+    // 初始化顯示 HH:MM:SS 格式
+    tick.value = {
+        hours: 0,
+        minutes: 0,
+        seconds: 0
+    };
+}
+
 class PopupManager {
     constructor() {
         this.isInitialized = false;
@@ -313,7 +326,9 @@ class PopupManager {
                 this.updateElement('clockInTime', '--:--');
                 this.updateElement('clockOutTime', '--:--');
                 this.updateElement('expectedClockOut', '--:--');
-                this.updateElement('remainingTime', '--:--');
+
+                // 重置翻頁時鐘
+                this.resetFlipClock();
             }
             
         } catch (error) {
@@ -323,15 +338,123 @@ class PopupManager {
 
     // 更新剩餘時間顯示
     updateRemainingTime(remainingTimeInfo) {
-        const element = document.getElementById('remainingTime');
-        if (!element) return;
+        const clockElement = document.getElementById('remainingTimeClock');
+        if (!clockElement) return;
 
         if (remainingTimeInfo.isOvertime) {
-            element.textContent = `已超時 ${remainingTimeInfo.overtimeMinutes}分鐘`;
-            element.style.color = '#ff6b6b';
+            // 超時顯示
+            clockElement.style.display = 'none';
+            const container = clockElement.parentElement;
+            let overtimeElement = container.querySelector('.overtime-display');
+            if (!overtimeElement) {
+                overtimeElement = document.createElement('span');
+                overtimeElement.className = 'overtime-display';
+                container.appendChild(overtimeElement);
+            }
+            overtimeElement.textContent = `已超時 ${remainingTimeInfo.overtimeMinutes}分鐘`;
+            overtimeElement.style.color = '#ff6b6b';
+            overtimeElement.style.display = 'inline';
         } else {
-            element.textContent = remainingTimeInfo.remainingTime;
-            element.style.color = '#51cf66';
+            // 正常剩餘時間顯示
+            clockElement.style.display = 'flex';
+            const overtimeElement = clockElement.parentElement.querySelector('.overtime-display');
+            if (overtimeElement) {
+                overtimeElement.style.display = 'none';
+            }
+
+            // 更新翻頁時鐘
+            this.updateFlipClock(remainingTimeInfo.remainingTime);
+        }
+    }
+
+    // 更新翻頁時鐘
+    updateFlipClock(timeString) {
+        if (!window.flipClockInstance) return;
+
+        // 解析時間字符串 (格式: HH:MM)
+        const parts = timeString.split(':');
+        if (parts.length >= 2) {
+            const hours = parseInt(parts[0]) || 0;
+            const minutes = parseInt(parts[1]) || 0;
+
+            // 轉換為總秒數（假設輸入是小時:分鐘格式）
+            const totalSeconds = hours * 3600 + minutes * 60;
+
+            // 啟動秒數倒數計時器
+            this.startCountdownTimer(totalSeconds);
+        }
+    }
+
+    // 啟動倒數計時器
+    startCountdownTimer(totalSeconds) {
+        // 清除之前的計時器
+        if (window.countdownTimer) {
+            clearInterval(window.countdownTimer);
+        }
+
+        // 更新顯示函數
+        const updateDisplay = (remainingSeconds) => {
+            if (remainingSeconds <= 0) {
+                remainingSeconds = 0;
+                if (window.countdownTimer) {
+                    clearInterval(window.countdownTimer);
+                    window.countdownTimer = null;
+                }
+            }
+
+            const hours = Math.floor(remainingSeconds / 3600);
+            const minutes = Math.floor((remainingSeconds % 3600) / 60);
+            const seconds = remainingSeconds % 60;
+
+            // 更新翻頁時鐘的值 - 顯示 HH:MM:SS 格式
+            if (window.flipClockInstance) {
+                window.flipClockInstance.value = {
+                    hours: hours,
+                    minutes: minutes,
+                    seconds: seconds
+                };
+            }
+        };
+
+        // 立即更新一次顯示
+        updateDisplay(totalSeconds);
+
+        // 如果還有剩餘時間，啟動每秒更新的計時器
+        if (totalSeconds > 0) {
+            let currentSeconds = totalSeconds;
+            window.countdownTimer = setInterval(() => {
+                currentSeconds--;
+                updateDisplay(currentSeconds);
+
+                if (currentSeconds <= 0) {
+                    clearInterval(window.countdownTimer);
+                    window.countdownTimer = null;
+                }
+            }, 1000);
+        }
+    }
+
+    // 重置翻頁時鐘
+    resetFlipClock() {
+        // 清除計時器
+        if (window.countdownTimer) {
+            clearInterval(window.countdownTimer);
+            window.countdownTimer = null;
+        }
+
+        // 隱藏翻頁時鐘
+        const clockElement = document.getElementById('remainingTimeClock');
+        if (clockElement) {
+            clockElement.style.display = 'none';
+        }
+
+        // 重置翻頁時鐘值
+        if (window.flipClockInstance) {
+            window.flipClockInstance.value = {
+                hours: 0,
+                minutes: 0,
+                seconds: 0
+            };
         }
     }
 
@@ -935,5 +1058,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 window.addEventListener('beforeunload', () => {
     if (window.popupManager) {
         window.popupManager.clearRefreshInterval();
+    }
+
+    // 清理倒數計時器
+    if (window.countdownTimer) {
+        clearInterval(window.countdownTimer);
+        window.countdownTimer = null;
     }
 });
