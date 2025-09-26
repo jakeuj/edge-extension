@@ -69,6 +69,10 @@ body {
     /* 陰影 */
     --theme-shadow: rgba(0, 0, 0, 0.1);
     --theme-shadowHover: rgba(102, 126, 234, 0.3);
+
+    /* 翻頁時鐘專用變數 */
+    --theme-text: var(--theme-textPrimary);
+    --theme-surface: var(--theme-backgroundCard);
 }
 
 /* 黑夜模式主題變數 */
@@ -105,6 +109,10 @@ body {
     /* 陰影 */
     --theme-shadow: rgba(0, 0, 0, 0.3);
     --theme-shadowHover: rgba(124, 58, 237, 0.4);
+
+    /* 翻頁時鐘專用變數 */
+    --theme-text: var(--theme-textPrimary);
+    --theme-surface: var(--theme-backgroundCard);
 }
 
 /* 莫蘭迪色系主題變數 */
@@ -141,6 +149,10 @@ body {
     /* 陰影 - 柔和的陰影效果 */
     --theme-shadow: rgba(74, 74, 74, 0.08);
     --theme-shadowHover: rgba(139, 157, 195, 0.2);
+
+    /* 翻頁時鐘專用變數 */
+    --theme-text: var(--theme-textPrimary);
+    --theme-surface: var(--theme-backgroundCard);
 }
 
 body {
@@ -1073,7 +1085,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    max-height: 280px;
+    max-height: 160px;
     overflow-y: auto;
     padding-right: 4px;
 }
@@ -1301,6 +1313,57 @@ input:checked + .slider:before {
     transform: translateX(20px);
 }
 
+/* 數字輸入欄位樣式 */
+.number-input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.number-input {
+    width: 80px;
+    padding: 8px 12px;
+    border: 1px solid var(--theme-border);
+    border-radius: 4px;
+    background: var(--theme-background);
+    color: var(--theme-textPrimary);
+    font-size: 14px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.number-input:focus {
+    outline: none;
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.number-input:hover {
+    border-color: var(--theme-primary);
+}
+
+.input-unit {
+    font-size: 14px;
+    color: var(--theme-textSecondary);
+    font-weight: 500;
+}
+
+/* 數字輸入欄位在不同主題下的樣式 */
+[data-theme="dark"] .number-input {
+    background: var(--theme-backgroundCard);
+    border-color: var(--theme-border);
+}
+
+[data-theme="dark"] .number-input:focus {
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.3);
+}
+
+[data-theme="morandi"] .number-input:focus {
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 2px rgba(139, 157, 195, 0.2);
+}
+
 /* 確認對話框樣式 */
 .confirm-overlay {
     position: absolute;
@@ -1450,4 +1513,182 @@ input:checked + .slider:before {
     .confirm-actions .btn-primary {
         width: 100%;
     }
+}
+
+/* 剩餘時間區塊樣式 */
+.remaining-time-section {
+    text-align: center;
+    margin: 16px 0;
+}
+
+.remaining-time-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--theme-textPrimary);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+/* 翻頁時鐘樣式 */
+.flip-clock-container {
+    display: inline-block;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.tick {
+    font-size: 35px;
+    font-weight: bold;
+    color: var(--theme-text);
+    display: flex;
+    align-items: center;
+    gap: 0.1em;
+}
+
+.tick-group {
+    display: flex;
+    align-items: center;
+}
+
+.tick-group > div {
+    display: flex;
+    align-items: center;
+}
+
+.time-separator {
+    height: 80px;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--theme-text);
+    margin: 0 0.15em;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    user-select: none;
+}
+
+.tick-flip {
+    margin: 0 0.02em;
+    min-width: 1.2em;
+    height: 2em;
+    border-radius: 0.15em;
+    font-size: 1em;
+    display: inline-block;
+}
+
+.tick-flip-panel {
+    background-color: var(--theme-surface);
+    color: var(--theme-text);
+    border: 1px solid var(--theme-border);
+}
+
+.tick-flip-panel-front,
+.tick-flip-panel-back {
+    background-color: var(--theme-surface);
+    color: var(--theme-text);
+}
+
+.overtime-display {
+    font-weight: bold;
+    font-size: 1em;
+}
+
+/* 確保翻頁時鐘在不同主題下的顏色正確 */
+.tick-flip-panel-front {
+    background-color: var(--theme-surface);
+    color: var(--theme-text);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.tick-flip-panel-back {
+    background-color: var(--theme-surface);
+    color: var(--theme-text);
+    box-shadow: inset 0 -1px rgba(0, 0, 0, 0.1);
+}
+
+/* 覆蓋 lib/flip.min.css 中的硬編碼顏色，確保翻頁動畫響應主題變化 */
+.tick-flip-panel {
+    color: var(--theme-text) !important;
+    background-color: var(--theme-surface) !important;
+}
+
+.tick-flip-panel-front,
+.tick-flip-panel-back {
+    background-color: var(--theme-surface) !important;
+    color: var(--theme-text) !important;
+}
+
+/* 翻頁動畫過程中的陰影效果 - 根據主題調整 */
+.tick-flip-panel-front {
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] .tick-flip-panel-front {
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+.tick-flip-panel-back {
+    box-shadow: inset 0 -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="dark"] .tick-flip-panel-back {
+    box-shadow: inset 0 -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 翻頁動畫中的漸變背景效果 - 根據主題調整 */
+.tick-flip-panel-back::after {
+    background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 1px, rgba(0, 0, 0, 0.05) 1px, transparent 30%) !important;
+}
+
+[data-theme="dark"] .tick-flip-panel-back::after {
+    background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 1px, rgba(0, 0, 0, 0.2) 1px, transparent 30%) !important;
+}
+
+/* 翻頁動畫中的陰影層效果 */
+.tick-flip-panel-front-shadow {
+    background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.2)) !important;
+}
+
+[data-theme="dark"] .tick-flip-panel-front-shadow {
+    background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4)) !important;
+}
+
+.tick-flip-panel-back-shadow {
+    background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)) !important;
+}
+
+[data-theme="dark"] .tick-flip-panel-back-shadow {
+    background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5)) !important;
+}
+
+.tick-flip-panel-back-highlight {
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.2)) !important;
+}
+
+[data-theme="dark"] .tick-flip-panel-back-highlight {
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1)) !important;
+}
+
+/* 莫蘭迪主題的翻頁動畫效果 */
+[data-theme="morandi"] .tick-flip-panel-front {
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="morandi"] .tick-flip-panel-back {
+    box-shadow: inset 0 -1px rgba(74, 74, 74, 0.08) !important;
+}
+
+[data-theme="morandi"] .tick-flip-panel-back::after {
+    background-image: linear-gradient(180deg, rgba(74, 74, 74, 0.08) 1px, rgba(74, 74, 74, 0.04) 1px, transparent 30%) !important;
+}
+
+[data-theme="morandi"] .tick-flip-panel-front-shadow {
+    background-image: linear-gradient(0deg, rgba(74, 74, 74, 0.4), rgba(74, 74, 74, 0.15)) !important;
+}
+
+[data-theme="morandi"] .tick-flip-panel-back-shadow {
+    background-image: linear-gradient(180deg, rgba(74, 74, 74, 0.3), rgba(74, 74, 74, 0.2)) !important;
+}
+
+[data-theme="morandi"] .tick-flip-panel-back-highlight {
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.15)) !important;
 }

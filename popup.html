@@ -5,18 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>技嘉出勤時間追蹤器</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="lib/flip.min.css">
     <link rel="stylesheet" href="styles/popup.css">
     <style>
         /* Font Awesome 圖標回退 - 緊急修復樣式 */
-        .fa-sign-out-alt::before { content: "⏻"; }
-        .fa-arrow-left::before { content: "←"; }
-        .fa-cog::before { content: "⚙"; }
-        .fa-refresh::before { content: "↻"; }
-        .fa-calendar::before { content: "📅"; }
-        .fa-clock::before { content: "🕐"; }
-        .fa-user::before { content: "👤"; }
-        .fa-check::before { content: "✓"; }
-        .fa-times::before { content: "✕"; }
+        .fa-sign-out-alt::before {
+            content: "⏻";
+        }
+
+        .fa-arrow-left::before {
+            content: "←";
+        }
+
+        .fa-cog::before {
+            content: "⚙";
+        }
+
+        .fa-refresh::before {
+            content: "↻";
+        }
+
+        .fa-calendar::before {
+            content: "📅";
+        }
+
+        .fa-clock::before {
+            content: "🕐";
+        }
+
+        .fa-user::before {
+            content: "👤";
+        }
+
+        .fa-check::before {
+            content: "✓";
+        }
+
+        .fa-times::before {
+            content: "✕";
+        }
     </style>
 </head>
 <body>
@@ -91,29 +118,51 @@
                         <span class="value" id="clockInTime">--:--</span>
                     </div>
                     <div class="info-row">
-                        <span class="label">下班時間:</span>
-                        <span class="value" id="clockOutTime">--:--</span>
+                        <span class="label">預計下班:</span>
+                        <span class="value" id="expectedClockOut">--:--</span>
                     </div>
                 </div>
 
                 <!-- 預計時間資訊區塊 -->
-                <div class="info-section expected-time">
-                    <div class="info-row">
-                        <span class="label">預計下班:</span>
-                        <span class="value" id="expectedClockOut">--:--</span>
+                <div class="remaining-time-section">
+                    <div class="remaining-time-label">剩餘時間</div>
+                    <div class="flip-clock-container">
+                            <div class="tick" id="remainingTimeClock" data-did-init="handleFlipClockInit">
+                                <div data-layout="horizontal center fit">
+                                    <!-- 小時 -->
+                                    <div class="tick-group hours-group">
+                                        <div data-key="hours" data-repeat="true" data-transform="pad(00) -> split">
+                                            <span data-view="flip"></span>
+                                        </div>
+                                    </div>
+                                    <div class="time-separator">:</div>
+
+                                    <!-- 分鐘 -->
+                                    <div class="tick-group minutes-group">
+                                        <div data-key="minutes" data-repeat="true" data-transform="pad(00) -> split">
+                                            <span data-view="flip"></span>
+                                        </div>
+                                    </div>
+                                    <div class="time-separator">:</div>
+
+                                    <!-- 秒數 -->
+                                    <div class="tick-group seconds-group">
+                                        <div data-key="seconds" data-repeat="true" data-transform="pad(00) -> split">
+                                            <span data-view="flip"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="info-row">
-                        <span class="label">剩餘時間:</span>
-                        <span class="value" id="remainingTime">--:--</span>
-                    </div>
-                </div>
+
             </div>
         </div>
 
         <!-- 出勤異常內容 -->
         <div class="tab-content" id="abnormalContent">
             <div class="abnormal-info">
-                <p class="info-text">自動查詢過去45天內的出勤異常記錄</p>
+                <p class="info-text" id="abnormalInfoText">自動查詢過去45天內的出勤異常記錄</p>
             </div>
 
             <div class="abnormal-list" id="abnormalList">
@@ -183,6 +232,18 @@
                 <h3>其他設定</h3>
                 <div class="setting-item">
                     <div class="setting-info">
+                        <div class="setting-name">異常記錄搜尋天數</div>
+                        <div class="setting-description">設定要搜尋過去幾天內的出勤異常記錄</div>
+                    </div>
+                    <div class="setting-control">
+                        <div class="number-input-container">
+                            <input type="number" id="abnormalSearchDays" min="1" max="365" value="45" class="number-input">
+                            <span class="input-unit">天</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-info">
                         <div class="setting-name">自動重新整理</div>
                         <div class="setting-description">定期自動更新出勤資料</div>
                     </div>
@@ -233,6 +294,7 @@
 </div>
 
 
+<script src="lib/flip.min.js"></script>
 <script src="scripts/storage.js"></script>
 <script src="scripts/themeManager.js"></script>
 <script src="scripts/auth.js"></script>
