@@ -289,14 +289,14 @@
 .tick-flip-panel-text-wrapper {
     position: absolute;
     left: 0;
-    top: 0;
+    top: 8px;
     right: 0;
     height: 100%
 }
 
 .tick-flip-panel-back-text .tick-flip-panel-text-wrapper {
     height: 200%;
-    top: -100%
+    top: -70%
 }
 
 .tick-flip-panel-front {

@@ -1459,7 +1459,7 @@ input:checked + .slider:before {
 }
 
 .tick {
-    font-size: 1.1em;
+    font-size: 35px;
     font-weight: bold;
     color: var(--theme-text);
     display: flex;
@@ -1478,7 +1478,7 @@ input:checked + .slider:before {
 }
 
 .time-separator {
-    font-size: 1.4em;
+    font-size: 1.8em;
     font-weight: bold;
     color: var(--theme-text);
     margin: 0 0.15em;
