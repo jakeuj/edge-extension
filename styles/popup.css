@@ -1464,6 +1464,20 @@ input:checked + .slider:before {
     }
 }
 
+/* 剩餘時間區塊樣式 */
+.remaining-time-section {
+    text-align: center;
+    margin: 16px 0;
+}
+
+.remaining-time-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--theme-textPrimary);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
 /* 翻頁時鐘樣式 */
 .flip-clock-container {
     display: inline-block;
@@ -1490,6 +1504,7 @@ input:checked + .slider:before {
 }
 
 .time-separator {
+    height: 80px;
     font-size: 1.8em;
     font-weight: bold;
     color: var(--theme-text);
@@ -1497,7 +1512,6 @@ input:checked + .slider:before {
     line-height: 1;
     display: flex;
     align-items: center;
-    height: 2em;
     user-select: none;
 }
 
