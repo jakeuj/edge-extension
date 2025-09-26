@@ -53,17 +53,29 @@ class ApiManager {
         }
     }
 
-    // 取得異常出勤資訊（過去45天）
-    async getAbnormalAttendance(serverKey) {
+    // 取得異常出勤資訊（可自訂天數）
+    async getAbnormalAttendance(serverKey, days = null) {
         try {
             if (!serverKey) {
                 throw new Error('缺少認證金鑰，請重新登入');
             }
 
-            // 計算過去45天的日期範圍
+            // 如果沒有指定天數，從設定中取得，預設為45天
+            let searchDays = days;
+            if (searchDays === null) {
+                try {
+                    const settings = await window.storageManager.getSettings();
+                    searchDays = settings.data.abnormalSearchDays || 45;
+                } catch (error) {
+                    console.warn('無法取得設定，使用預設值45天:', error);
+                    searchDays = 45;
+                }
+            }
+
+            // 計算指定天數的日期範圍
             const endDate = new Date();
             const startDate = new Date();
-            startDate.setDate(endDate.getDate() - 45);
+            startDate.setDate(endDate.getDate() - searchDays);
 
             const startDateStr = this.formatDate(startDate);
             const endDateStr = this.formatDate(endDate);

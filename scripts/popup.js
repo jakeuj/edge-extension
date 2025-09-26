@@ -24,6 +24,7 @@ class PopupManager {
         this.abnormalCount = 0;
         this.isInSettingsPage = false; // 追蹤是否在設定頁面
         this.confirmCallback = null; // 確認對話框回調函數
+        this.currentSettings = null; // 當前設定
     }
 
     // 初始化 popup
@@ -40,7 +41,10 @@ class PopupManager {
 
             // 設定事件監聽器
             this.setupEventListeners();
-            
+
+            // 載入使用者設定
+            await this.loadInitialSettings();
+
             // 根據登入狀態顯示對應介面
             if (isLoggedIn) {
                 await this.showAttendanceSection();
@@ -141,6 +145,13 @@ class PopupManager {
             autoRefreshToggle.addEventListener('change', (e) => {
                 this.handleAutoRefreshToggle(e.target.checked);
             });
+        }
+
+        // 異常搜尋天數設定事件
+        const abnormalSearchDaysInput = document.getElementById('abnormalSearchDays');
+        if (abnormalSearchDaysInput) {
+            abnormalSearchDaysInput.addEventListener('change', (e) => this.handleAbnormalSearchDaysChange(e));
+            abnormalSearchDaysInput.addEventListener('blur', (e) => this.handleAbnormalSearchDaysChange(e));
         }
 
 
@@ -562,8 +573,11 @@ class PopupManager {
         const abnormalList = document.getElementById('abnormalList');
         if (!abnormalList) return;
 
+        // 取得當前設定的天數
+        const days = this.currentSettings?.abnormalSearchDays || 45;
+
         if (!abnormalData || abnormalData.length === 0) {
-            abnormalList.innerHTML = '<div class="no-abnormal-data">🎉 恭喜！過去45天內沒有出勤異常記錄</div>';
+            abnormalList.innerHTML = `<div class="no-abnormal-data">🎉 恭喜！過去${days}天內沒有出勤異常記錄</div>`;
             return;
         }
 
@@ -871,6 +885,18 @@ class PopupManager {
                     if (autoRefreshToggle) {
                         autoRefreshToggle.checked = settings.autoRefresh !== false;
                     }
+
+                    // 更新異常搜尋天數設定
+                    const abnormalSearchDaysInput = document.getElementById('abnormalSearchDays');
+                    if (abnormalSearchDaysInput) {
+                        abnormalSearchDaysInput.value = settings.abnormalSearchDays || 45;
+                    }
+
+                    // 儲存當前設定
+                    this.currentSettings = settings;
+
+                    // 更新異常記錄頁面的提示文字
+                    this.updateAbnormalInfoText(settings.abnormalSearchDays || 45);
                 } else {
                     console.warn('載入設定失敗，使用預設設定:', settingsResult.error);
                     // 使用預設設定
@@ -878,6 +904,14 @@ class PopupManager {
                     if (autoRefreshToggle) {
                         autoRefreshToggle.checked = true; // 預設開啟
                     }
+
+                    const abnormalSearchDaysInput = document.getElementById('abnormalSearchDays');
+                    if (abnormalSearchDaysInput) {
+                        abnormalSearchDaysInput.value = 45; // 預設45天
+                    }
+
+                    // 更新異常記錄頁面的提示文字
+                    this.updateAbnormalInfoText(45);
                 }
             }
         } catch (error) {
@@ -967,7 +1001,74 @@ class PopupManager {
         }
     }
 
+    // 處理異常搜尋天數設定變更
+    async handleAbnormalSearchDaysChange(event) {
+        try {
+            const input = event.target;
+            let days = parseInt(input.value);
 
+            // 驗證輸入值
+            if (isNaN(days) || days < 1) {
+                days = 1;
+                input.value = 1;
+            } else if (days > 365) {
+                days = 365;
+                input.value = 365;
+            }
+
+            // 儲存設定
+            const settings = await window.storageManager.getSettings();
+            const updatedSettings = {
+                ...settings.data,
+                abnormalSearchDays: days
+            };
+
+            await window.storageManager.saveSettings(updatedSettings);
+            this.currentSettings = updatedSettings;
+
+            // 更新異常記錄頁面的提示文字
+            this.updateAbnormalInfoText(days);
+
+            // 如果當前在異常記錄頁面，重新載入資料
+            if (this.currentTab === 'abnormal') {
+                await this.loadAbnormalData(true);
+            }
+
+        } catch (error) {
+            console.error('儲存異常搜尋天數設定失敗:', error);
+        }
+    }
+
+    // 更新異常記錄頁面的提示文字
+    updateAbnormalInfoText(days) {
+        const abnormalInfoText = document.getElementById('abnormalInfoText');
+        if (abnormalInfoText) {
+            abnormalInfoText.textContent = `自動查詢過去${days}天內的出勤異常記錄`;
+        }
+    }
+
+    // 載入初始設定
+    async loadInitialSettings() {
+        try {
+            if (window.storageManager) {
+                const settingsResult = await window.storageManager.getSettings();
+                if (settingsResult.success) {
+                    this.currentSettings = settingsResult.data;
+                    // 更新異常記錄頁面的提示文字
+                    this.updateAbnormalInfoText(this.currentSettings.abnormalSearchDays || 45);
+                } else {
+                    // 使用預設設定
+                    this.currentSettings = { abnormalSearchDays: 45 };
+                    this.updateAbnormalInfoText(45);
+                }
+            }
+        } catch (error) {
+            console.error('載入初始設定失敗:', error);
+            // 使用預設設定
+            this.currentSettings = { abnormalSearchDays: 45 };
+            this.updateAbnormalInfoText(45);
+        }
+    }
 
     // 更新元素內容
     updateElement(id, content) {

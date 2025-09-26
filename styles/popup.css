@@ -1085,7 +1085,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    max-height: 280px;
+    max-height: 160px;
     overflow-y: auto;
     padding-right: 4px;
 }
@@ -1311,6 +1311,57 @@ input:checked + .slider {
 
 input:checked + .slider:before {
     transform: translateX(20px);
+}
+
+/* 數字輸入欄位樣式 */
+.number-input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.number-input {
+    width: 80px;
+    padding: 8px 12px;
+    border: 1px solid var(--theme-border);
+    border-radius: 4px;
+    background: var(--theme-background);
+    color: var(--theme-textPrimary);
+    font-size: 14px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.number-input:focus {
+    outline: none;
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.number-input:hover {
+    border-color: var(--theme-primary);
+}
+
+.input-unit {
+    font-size: 14px;
+    color: var(--theme-textSecondary);
+    font-weight: 500;
+}
+
+/* 數字輸入欄位在不同主題下的樣式 */
+[data-theme="dark"] .number-input {
+    background: var(--theme-backgroundCard);
+    border-color: var(--theme-border);
+}
+
+[data-theme="dark"] .number-input:focus {
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.3);
+}
+
+[data-theme="morandi"] .number-input:focus {
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 2px rgba(139, 157, 195, 0.2);
 }
 
 /* 確認對話框樣式 */

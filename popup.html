@@ -162,7 +162,7 @@
         <!-- 出勤異常內容 -->
         <div class="tab-content" id="abnormalContent">
             <div class="abnormal-info">
-                <p class="info-text">自動查詢過去45天內的出勤異常記錄</p>
+                <p class="info-text" id="abnormalInfoText">自動查詢過去45天內的出勤異常記錄</p>
             </div>
 
             <div class="abnormal-list" id="abnormalList">
@@ -230,6 +230,18 @@
             <!-- 其他設定 -->
             <div class="setting-group">
                 <h3>其他設定</h3>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-name">異常記錄搜尋天數</div>
+                        <div class="setting-description">設定要搜尋過去幾天內的出勤異常記錄</div>
+                    </div>
+                    <div class="setting-control">
+                        <div class="number-input-container">
+                            <input type="number" id="abnormalSearchDays" min="1" max="365" value="45" class="number-input">
+                            <span class="input-unit">天</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="setting-item">
                     <div class="setting-info">
                         <div class="setting-name">自動重新整理</div>

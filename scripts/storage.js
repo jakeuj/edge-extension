@@ -27,7 +27,8 @@ class StorageManager {
         this.defaultSettings = {
             autoRefresh: true,
             refreshInterval: 60000, // 1 分鐘
-            notifications: true
+            notifications: true,
+            abnormalSearchDays: 45 // 異常記錄搜尋天數
         };
 
         // 檢查 Chrome Storage API 是否可用
