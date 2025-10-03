@@ -23,12 +23,17 @@ class AuthManager {
                 this.serverKey = data.serverKey || null;
                 this.loginTime = data.lastLoginTime || null;
 
-                // 檢查登入是否過期（8小時）
+                // 檢查登入是否過期（8小時），如果過期則嘗試自動重新登入
                 if (this.isLoggedIn && this.loginTime) {
                     const hoursSinceLogin = (Date.now() - this.loginTime) / (1000 * 60 * 60);
                     if (hoursSinceLogin > 8) {
-                        await this.logout();
-                        return false;
+                        console.log('Token 已過期，嘗試自動重新登入...');
+                        const reloginResult = await this.attemptAutoRelogin();
+                        if (!reloginResult.success) {
+                            await this.logout();
+                            return false;
+                        }
+                        return true;
                     }
                 }
 
@@ -59,13 +64,20 @@ class AuthManager {
                 throw new Error('帳號格式錯誤，請使用 "域名\\使用者名稱" 格式');
             }
 
+            // 如果需要記住密碼，先加密
+            let encryptedPassword = null;
+            if (remember && window.cryptoManager) {
+                encryptedPassword = await window.cryptoManager.encrypt(password);
+            }
+
             // 發送登入請求到背景腳本
             const response = await this.sendMessage({
                 action: 'login',
                 credentials: {
                     account: account,
                     password: password,
-                    remember: remember
+                    remember: remember,
+                    encryptedPassword: encryptedPassword
                 }
             });
 
@@ -73,7 +85,12 @@ class AuthManager {
                 this.isLoggedIn = true;
                 this.serverKey = response.serverKey;
                 this.loginTime = Date.now();
-                
+
+                // 如果勾選記住密碼，儲存加密後的憑證
+                if (remember && window.cryptoManager) {
+                    await window.cryptoManager.saveCredentials(account, password);
+                }
+
                 return {
                     success: true,
                     message: response.message || '登入成功'
@@ -91,7 +108,7 @@ class AuthManager {
     }
 
     // 登出
-    async logout() {
+    async logout(clearCredentials = false) {
         try {
             const response = await this.sendMessage({
                 action: 'logout'
@@ -100,6 +117,11 @@ class AuthManager {
             this.isLoggedIn = false;
             this.serverKey = null;
             this.loginTime = null;
+
+            // 如果指定清除憑證，則清除儲存的帳號密碼
+            if (clearCredentials && window.cryptoManager) {
+                await window.cryptoManager.clearCredentials();
+            }
 
             return {
                 success: true,
@@ -250,6 +272,68 @@ class AuthManager {
             hoursRemaining: hoursRemaining,
             isExpired: hoursSinceLogin >= 8
         };
+    }
+
+    // 嘗試自動重新登入
+    async attemptAutoRelogin() {
+        try {
+            console.log('嘗試自動重新登入...');
+
+            // 檢查是否有加密管理器
+            if (!window.cryptoManager) {
+                console.error('加密管理器未初始化');
+                return { success: false, error: '加密管理器未初始化' };
+            }
+
+            // 讀取儲存的憑證
+            const credentialsResult = await window.cryptoManager.loadCredentials();
+
+            if (!credentialsResult.success) {
+                console.log('無法讀取儲存的憑證:', credentialsResult.error);
+                return { success: false, error: '無儲存的憑證' };
+            }
+
+            const { account, password } = credentialsResult;
+
+            // 使用儲存的憑證重新登入
+            console.log('使用儲存的憑證重新登入...');
+            const loginResult = await this.login(account, password, true);
+
+            if (loginResult.success) {
+                console.log('自動重新登入成功');
+                return { success: true, message: '自動重新登入成功' };
+            } else {
+                console.error('自動重新登入失敗:', loginResult.error);
+                return { success: false, error: loginResult.error };
+            }
+        } catch (error) {
+            console.error('自動重新登入錯誤:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    // 處理 API 錯誤並嘗試自動重新登入
+    async handleApiError(error) {
+        // 檢查是否為認證錯誤
+        if (error.message && (error.message.includes('401') ||
+            error.message.includes('認證') ||
+            error.message.includes('unauthorized'))) {
+
+            console.log('偵測到認證錯誤，嘗試自動重新登入...');
+
+            // 嘗試自動重新登入
+            const reloginResult = await this.attemptAutoRelogin();
+
+            if (reloginResult.success) {
+                return { success: true, shouldRetry: true };
+            } else {
+                // 自動重新登入失敗，需要使用者手動登入
+                await this.logout();
+                return { success: false, shouldRetry: false, error: '請重新登入' };
+            }
+        }
+
+        return { success: false, shouldRetry: false, error: error.message };
     }
 }
 

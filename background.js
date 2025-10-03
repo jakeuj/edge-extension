@@ -70,8 +70,10 @@ async function handleLogin(credentials) {
             
             if (credentials.remember) {
                 loginData.savedAccount = credentials.account;
+                loginData.savedPassword = credentials.encryptedPassword; // 儲存加密後的密碼
+                loginData.hasCredentials = true;
             }
-            
+
             await chrome.storage.local.set(loginData);
             
             return { 
@@ -204,21 +206,25 @@ async function handleGetHistoryAttendance(serverKey, startDate, endDate) {
 // 處理登出
 async function handleLogout() {
     try {
+        // 清除登入狀態，但保留儲存的憑證以便自動重新登入
         await chrome.storage.local.set({
             isLoggedIn: false,
             serverKey: null,
             attendanceData: null,
             lastUpdateTime: null
         });
-        
-        return { 
-            success: true, 
+
+        // 注意：不清除 savedAccount, savedPassword, hasCredentials
+        // 這樣可以在 token 過期時自動重新登入
+
+        return {
+            success: true,
             message: '已登出'
         };
     } catch (error) {
         console.error('登出錯誤:', error);
-        return { 
-            success: false, 
+        return {
+            success: false,
             error: '登出時發生錯誤'
         };
     }
@@ -232,20 +238,59 @@ function formatDate(date) {
     return `${year}-${month}-${day}`;
 }
 
-// 定期檢查 serverKey 是否過期（每小時檢查一次）
+// 自動重新登入機制 - 當 token 過期時自動使用儲存的憑證重新登入
+async function attemptAutoRelogin() {
+    try {
+        const data = await chrome.storage.local.get([
+            'hasCredentials',
+            'savedAccount',
+            'savedPassword'
+        ]);
+
+        if (!data.hasCredentials || !data.savedAccount || !data.savedPassword) {
+            console.log('無儲存的憑證，無法自動重新登入');
+            return { success: false, error: '無儲存的憑證' };
+        }
+
+        console.log('嘗試自動重新登入...');
+
+        // 使用儲存的憑證重新登入
+        const result = await handleLogin({
+            account: data.savedAccount,
+            password: data.savedPassword, // 這是加密後的密碼，需要在前端解密
+            remember: true,
+            isEncrypted: true // 標記這是加密的密碼
+        });
+
+        if (result.success) {
+            console.log('自動重新登入成功');
+        } else {
+            console.error('自動重新登入失敗:', result.error);
+        }
+
+        return result;
+    } catch (error) {
+        console.error('自動重新登入錯誤:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// 定期檢查 token 是否過期並自動重新登入（每小時檢查一次）
 setInterval(async () => {
-    const data = await chrome.storage.local.get(['isLoggedIn', 'lastLoginTime']);
-    
+    const data = await chrome.storage.local.get(['isLoggedIn', 'lastLoginTime', 'hasCredentials']);
+
     if (data.isLoggedIn && data.lastLoginTime) {
         const hoursSinceLogin = (Date.now() - data.lastLoginTime) / (1000 * 60 * 60);
-        
-        // 如果超過 8 小時，清除登入狀態
-        if (hoursSinceLogin > 8) {
-            await chrome.storage.local.set({
-                isLoggedIn: false,
-                serverKey: null,
-                attendanceData: null
-            });
+
+        // 如果超過 7.5 小時，嘗試自動重新登入（在 8 小時過期前）
+        if (hoursSinceLogin > 7.5 && data.hasCredentials) {
+            console.log('Token 即將過期，嘗試自動重新登入...');
+            await attemptAutoRelogin();
         }
     }
 }, 60 * 60 * 1000); // 每小時檢查一次
+
+// 匯出函數供其他模組使用
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { attemptAutoRelogin };
+}

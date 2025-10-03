@@ -69,7 +69,9 @@ class PopupManager {
 
         while (Date.now() - startTime < maxWait) {
             if (window.authManager && window.apiManager && window.timeCalculator &&
-                window.themeManager && window.storageManager) {
+                window.themeManager && window.storageManager && window.cryptoManager) {
+                // 初始化加密管理器
+                await window.cryptoManager.init();
                 return;
             }
             await new Promise(resolve => setTimeout(resolve, 100));
@@ -297,10 +299,21 @@ class PopupManager {
         } catch (error) {
             console.error('載入出勤資料錯誤:', error);
             this.updateStatusIndicator(false);
-            
-            // 如果是認證錯誤，自動登出
+
+            // 如果是認證錯誤，嘗試自動重新登入
             if (error.message.includes('認證') || error.message.includes('401')) {
-                await this.handleLogout();
+                const reloginResult = await window.authManager.handleApiError(error);
+
+                if (reloginResult.success && reloginResult.shouldRetry) {
+                    // 自動重新登入成功，重試載入資料
+                    console.log('自動重新登入成功，重試載入資料...');
+                    this.showSuccess('已自動重新登入');
+                    await this.loadAttendanceData(showLoading);
+                } else {
+                    // 自動重新登入失敗，顯示登入畫面
+                    await this.showLoginSection();
+                    this.showError('登入已過期，請重新登入');
+                }
             } else {
                 this.showError(error.message);
             }
