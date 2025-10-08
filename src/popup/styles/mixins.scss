@@ -1,0 +1,292 @@
+/**
+ * SCSS Mixins
+ * 可重用的樣式片段
+ */
+
+// ==================== Flexbox Mixins ====================
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin flex-column-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+// ==================== 文字處理 Mixins ====================
+
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin text-clamp($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ==================== 按鈕 Mixins ====================
+
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border: none;
+  border-radius: $border-radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  transition: all $transition-base $ease-in-out;
+  user-select: none;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+@mixin button-primary {
+  @include button-base;
+  background: var(--theme-primaryGradient);
+  color: var(--theme-textInverse);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--theme-shadowHover);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+@mixin button-secondary {
+  @include button-base;
+  background: var(--theme-backgroundSecondary);
+  color: var(--theme-textPrimary);
+  border: 1px solid var(--theme-border);
+
+  &:hover:not(:disabled) {
+    background: var(--theme-border);
+  }
+}
+
+// ==================== 卡片 Mixins ====================
+
+@mixin card {
+  background: var(--theme-backgroundCard);
+  border-radius: $border-radius-lg;
+  padding: 20px;
+  box-shadow: 0 2px 8px var(--theme-shadow);
+}
+
+@mixin card-hover {
+  @include card;
+  transition: all $transition-base $ease-in-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px var(--theme-shadow);
+  }
+}
+
+// ==================== 輸入框 Mixins ====================
+
+@mixin input-base {
+  padding: 10px 12px;
+  border: 2px solid var(--theme-border);
+  border-radius: $border-radius-md;
+  font-size: $font-size-sm;
+  background: var(--theme-background);
+  color: var(--theme-textPrimary);
+  transition: all $transition-base $ease-in-out;
+
+  &:focus {
+    outline: none;
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 3px var(--theme-hover);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &::placeholder {
+    color: var(--theme-textMuted);
+  }
+}
+
+// ==================== 滾動條 Mixins ====================
+
+@mixin scrollbar($width: 8px, $track-color: var(--theme-backgroundSecondary), $thumb-color: var(--theme-border)) {
+  &::-webkit-scrollbar {
+    width: $width;
+    height: $width;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $track-color;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $thumb-color;
+    border-radius: calc($width / 2);
+
+    &:hover {
+      background: var(--theme-textMuted);
+    }
+  }
+}
+
+// ==================== 陰影 Mixins ====================
+
+@mixin shadow-sm {
+  box-shadow: $shadow-sm;
+}
+
+@mixin shadow-md {
+  box-shadow: $shadow-md;
+}
+
+@mixin shadow-lg {
+  box-shadow: $shadow-lg;
+}
+
+@mixin shadow-xl {
+  box-shadow: $shadow-xl;
+}
+
+// ==================== 動畫 Mixins ====================
+
+@mixin fade-in($duration: $transition-base) {
+  animation: fadeIn $duration $ease-out;
+}
+
+@mixin slide-in($duration: $transition-base) {
+  animation: slideIn $duration $ease-out;
+}
+
+@mixin pulse($duration: 1s) {
+  animation: pulse $duration infinite;
+}
+
+// ==================== 響應式 Mixins ====================
+
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == 'xs' {
+    @media (min-width: $breakpoint-xs) {
+      @content;
+    }
+  } @else if $breakpoint == 'sm' {
+    @media (min-width: $breakpoint-sm) {
+      @content;
+    }
+  } @else if $breakpoint == 'md' {
+    @media (min-width: $breakpoint-md) {
+      @content;
+    }
+  } @else if $breakpoint == 'lg' {
+    @media (min-width: $breakpoint-lg) {
+      @content;
+    }
+  } @else if $breakpoint == 'xl' {
+    @media (min-width: $breakpoint-xl) {
+      @content;
+    }
+  }
+}
+
+// ==================== 位置 Mixins ====================
+
+@mixin absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@mixin absolute-full {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+@mixin fixed-full {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+// ==================== 主題相關 Mixins ====================
+
+@mixin theme-transition {
+  transition: background-color $transition-base $ease-in-out,
+              color $transition-base $ease-in-out,
+              border-color $transition-base $ease-in-out;
+}
+
+// ==================== 工具 Mixins ====================
+
+@mixin clearfix {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+@mixin aspect-ratio($width, $height) {
+  position: relative;
+
+  &::before {
+    content: '';
+    display: block;
+    padding-top: calc($height / $width * 100%);
+  }
+
+  > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+

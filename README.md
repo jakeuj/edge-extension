@@ -1,192 +1,262 @@
-# 技嘉出勤時間追蹤器
+# 技嘉出勤時間追蹤器 v2.0
 
-[![GitHub release](https://img.shields.io/github/v/release/jakeuj/edge-extension?style=flat-square)](https://github.com/jakeuj/edge-extension/releases)
-[![License](https://img.shields.io/github/license/jakeuj/edge-extension?style=flat-square)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/jakeuj/edge-extension?style=flat-square)](https://github.com/jakeuj/edge-extension/stargazers)
-[![PayPal](https://img.shields.io/badge/PayPal-贊助-blue?style=flat-square&logo=paypal)](https://www.paypal.com/ncp/payment/PLYGLLUS2Z8VS)
+> TypeScript + Vue 3.0 (Composition API) 版本
 
-一個專為技嘉員工設計的 Microsoft Edge 瀏覽器擴充套件，能夠自動追蹤您的上下班時間，並根據公司的彈性上班制度智能計算預計下班時間。
+一個用於追蹤技嘉員工出勤時間的 Chrome/Edge 瀏覽器擴充套件，支援彈性上班制度、自動計算預計下班時間、異常記錄查詢等功能。
 
-## 🌟 主要功能
+## ✨ 主要功能
 
-- **🔐 安全登入**: 直接連接技嘉 EIP 系統，使用您的公司帳號安全登入
-- **🔄 自動重新登入**: Token 過期時自動重新登入，無需手動操作 ✨ **NEW**
-- **🔒 加密儲存**: 使用 AES-GCM 256-bit 加密安全儲存密碼 ✨ **NEW**
-- **⏰ 智能計算**: 根據彈性上班制度自動計算預計下班時間
-- **📊 即時顯示**: 即時顯示今日出勤狀況和剩餘工作時間
-- **📈 歷史記錄**: 查看過去的出勤記錄和異常狀況
-- **💾 記憶功能**: 可選擇記住登入資訊，方便日常使用
-- **🔄 自動更新**: 定期自動更新出勤資料
-- **🎨 多主題支援**: 支援白色主題、黑夜模式和莫蘭迪色系
+### 🔐 認證管理
+- 使用者登入與登出
+- 記住密碼功能（AES-GCM 加密）
+- 自動重新登入（Token 過期前自動更新）
 
-## 📋 彈性上班制度規則
+### 📊 出勤追蹤
+- 今日出勤資訊顯示
+- 預計下班時間計算（基於彈性上班制度）
+- 剩餘工作時間倒數（翻頁時鐘效果）
+- 異常出勤記錄查詢（可設定查詢天數）
 
-- **彈性上班時間**: 8:30 - 9:30
-- **8:30 上班** → 17:45 下班
-- **8:30-9:30 之間上班**: 固定工作 9小時15分鐘
-- **9:30 上班** → 18:45 下班
-- **超過 9:30 上班** → 18:45 下班
+### 🎨 主題系統
+- 白色主題（預設）
+- 黑夜模式（護眼深色主題）
+- 莫蘭迪色系（柔和優雅）
 
-## 🚀 安裝方法
+### ⚙️ 設定選項
+- 自動重新整理間隔設定
+- 異常記錄查詢天數設定
+- 通知開關
 
-### 方法一：下載發布版本（推薦）
+## 🚀 快速開始
 
-1. 前往 [Releases 頁面](https://github.com/jakeuj/edge-extension/releases)
-2. 下載最新版本的 ZIP 檔案
-3. 解壓縮到本機資料夾
-4. 開啟 Microsoft Edge，前往 `edge://extensions/`
-5. 開啟右上角的「開發人員模式」
-6. 點擊「載入解壓縮」按鈕
-7. 選擇解壓縮的資料夾
-8. 擴充套件安裝完成！
+### 環境需求
 
-### 方法二：手動安裝開發版本
+- **Node.js**: 18.x 或更新版本
+- **npm**: 8.x 或更新版本
+- **瀏覽器**: Chrome 或 Edge (支援 Manifest V3)
 
-1. 下載或克隆此專案到本機
-2. **生成圖示檔案**（可選）：
-   - 開啟 `tools/generate-icons.html` 檔案
-   - 點擊「下載所有圖示」按鈕
-   - 將下載的圖示檔案放到 `icons/` 資料夾中
-3. 開啟 Microsoft Edge，前往 `edge://extensions/`
-4. 開啟右上角的「開發人員模式」
-5. 點擊「載入解壓縮」按鈕
-6. 選擇專案資料夾
-7. 擴充套件安裝完成！
+### 安裝步驟
 
-**注意**：如果沒有生成圖示檔案，擴充套件仍可正常運作，只是會使用預設圖示。
+1. **克隆專案**
+```bash
+git clone https://github.com/jakeuj/edge-extension.git
+cd edge-extension
+```
 
-### 方法三：從商店安裝（未來）
+2. **安裝相依套件**
+```bash
+npm install
+```
 
-待擴充套件通過審核後，將可從 Microsoft Edge 附加元件商店直接安裝。
+3. **建置專案**
+```bash
+# 開發模式（支援 HMR）
+npm run dev
+
+# 生產建置
+npm run build
+```
+
+4. **載入擴充套件**
+   - 開啟 Chrome/Edge 瀏覽器
+   - 前往 `chrome://extensions/` 或 `edge://extensions/`
+   - 啟用「開發人員模式」
+   - 點擊「載入未封裝項目」
+   - 選擇專案的 `dist` 資料夾
+
+## 📁 專案結構
+
+```
+src/
+├── manifest.json                    # Extension Manifest V3
+├── types/                           # TypeScript 型別定義
+│   ├── attendance.ts               # 出勤相關型別
+│   ├── auth.ts                     # 認證相關型別
+│   ├── storage.ts                  # 儲存相關型別
+│   ├── theme.ts                    # 主題相關型別
+│   ├── time.ts                     # 時間相關型別
+│   └── index.ts                    # 統一匯出
+├── utils/                           # 核心工具類別
+│   ├── crypto.ts                   # 加密管理器
+│   ├── storage.ts                  # 儲存管理器
+│   └── timeCalculator.ts           # 時間計算器
+├── composables/                     # Vue 3 Composables
+│   ├── useAuth.ts                  # 認證管理
+│   ├── useApi.ts                   # API 呼叫
+│   ├── useStorage.ts               # 儲存操作
+│   ├── useTheme.ts                 # 主題管理
+│   ├── useTimeCalculator.ts        # 時間計算
+│   ├── useAttendance.ts            # 出勤管理
+│   └── index.ts                    # 統一匯出
+├── background/                      # 背景腳本
+│   └── service-worker.ts           # Service Worker
+└── popup/                           # Popup UI
+    ├── popup.html                  # HTML 入口
+    ├── main.ts                     # Vue 應用程式入口
+    ├── App.vue                     # 根元件
+    ├── style.scss                  # 全域樣式
+    └── components/                 # Vue 元件
+        ├── common/                 # 通用元件
+        │   ├── Header.vue
+        │   ├── LoadingOverlay.vue
+        │   └── ErrorMessage.vue
+        ├── LoginForm.vue           # 登入表單
+        ├── AttendanceView.vue      # 出勤檢視
+        ├── TodayTab.vue            # 今日出勤
+        ├── AbnormalTab.vue         # 異常記錄
+        ├── FlipClock.vue           # 翻頁時鐘
+        └── SettingsView.vue        # 設定頁面
+```
+
+## 🔧 技術堆疊
+
+### 核心技術
+- **Vue 3.4.21** - 使用 Composition API 與 `<script setup>` 語法
+- **TypeScript 5.3.3** - 嚴格型別檢查
+- **Vite 5.1.4** - 現代化建置工具
+- **SCSS** - CSS 預處理器
+
+### 開發工具
+- **vite-plugin-web-extension** - 瀏覽器擴充套件建置支援
+- **@types/chrome** - Chrome Extension API 型別定義
+
+### 狀態管理
+- **Pinia 2.1.7** - Vue 3 官方狀態管理庫
 
 ## 📖 使用說明
 
-### 首次使用
-
-1. 點擊瀏覽器工具列上的擴充套件圖示
-2. 輸入您的技嘉帳號（格式：`gigabyte\your.username`）
+### 登入
+1. 點擊瀏覽器工具列的擴充套件圖示
+2. 輸入帳號（格式：`域名\使用者名稱`，例如：`gigabyte\your.username`）
 3. 輸入密碼
-4. 可選擇「記住登入資訊」以便下次快速登入
+4. 勾選「記住登入資訊」（可選，會加密儲存憑證）
 5. 點擊「登入」按鈕
 
-### 日常使用
+### 查看出勤資訊
+- **今日出勤**: 顯示今日上班時間、預計下班時間、剩餘工作時間
+- **出勤異常**: 顯示過去指定天數內的異常出勤記錄
 
-登入成功後，擴充套件會自動顯示：
+### 切換主題
+1. 點擊右上角的設定圖示
+2. 在「主題設定」區塊選擇喜歡的主題
+3. 主題會立即套用並自動儲存
 
-- 今日日期和星期
-- 上班打卡時間
-- 下班打卡時間（如已打卡）
-- 根據彈性制度計算的預計下班時間
-- 剩餘工作時間或超時時間
+### 調整設定
+1. 點擊右上角的設定圖示
+2. 調整以下選項：
+   - 自動重新整理間隔（秒）
+   - 異常記錄查詢天數
+   - 通知開關
+3. 點擊「儲存設定」按鈕
 
-## 🛠️ 技術架構
+## 🎯 彈性上班制度規則
 
-### 檔案結構
+專案實作了技嘉的彈性上班制度：
 
-```
-edge-extension/
-├── manifest.json          # 擴充套件配置檔
-├── popup.html             # 主要介面
-├── background.js          # 背景服務工作者
-├── index.html             # GitHub Pages 首頁
-├── styles/
-│   └── popup.css          # 樣式檔案
-├── scripts/
-│   ├── popup.js           # 主要邏輯
-│   ├── auth.js            # 認證管理
-│   ├── api.js             # API 呼叫
-│   ├── timeCalculator.js  # 時間計算
-│   └── storage.js         # 資料儲存
-└── icons/                 # 圖示檔案
-```
-
-### 主要模組
-
-- **AuthManager**: 處理登入、登出和認證狀態管理
-- **ApiManager**: 處理與技嘉 EIP 系統的 API 通訊
-- **TimeCalculator**: 實作彈性上班制度的時間計算邏輯
-- **StorageManager**: 管理 Chrome Storage API 的資料儲存
-- **PopupManager**: 整合所有功能並處理使用者介面
+| 上班時間 | 下班時間計算規則 |
+|---------|----------------|
+| ≤ 8:30 | 固定 17:45 下班 |
+| 8:30 - 9:30 | 上班時間 + 9 小時 15 分鐘 |
+| > 9:30 | 固定 18:45 下班 |
 
 ## 🔒 安全性
 
-- 登入資訊安全儲存在本機，不會傳送到第三方伺服器
-- 使用 HTTPS 加密連線與技嘉 EIP 系統通訊
-- serverKey 有時效性，過期後需要重新登入
-- 支援自動登出機制，確保帳號安全
+### 加密機制
+- **演算法**: AES-GCM (256-bit)
+- **金鑰衍生**: PBKDF2 (100,000 次迭代)
+- **鹽值**: 瀏覽器指紋（基於 User Agent 和其他瀏覽器特徵）
 
-## ⚠️ 注意事項
+### 資料儲存
+- 使用 Chrome Storage API 儲存加密後的憑證
+- 不會將密碼以明文形式儲存
+- 支援清除所有儲存資料
 
-- 此擴充套件僅供技嘉員工使用
-- 需要有效的技嘉 EIP 系統帳號
-- 帳號格式必須包含域名：`域名\使用者名稱`
-- 建議定期更新擴充套件以獲得最新功能
+## 🛠️ 開發指南
 
-## 🐛 問題回報
+### 可用指令
 
-如果您遇到任何問題或有功能建議，請：
+```bash
+# 開發模式（支援 HMR）
+npm run dev
 
-1. 前往 [GitHub Issues](https://github.com/jakeuj/edge-extension/issues)
-2. 詳細描述問題或建議
-3. 提供相關的錯誤訊息或截圖
+# 建置生產版本
+npm run build
 
-## 📄 授權條款
+# 預覽建置結果
+npm run preview
 
-本專案採用 MIT 授權條款。詳細內容請參閱 [LICENSE](LICENSE) 檔案。
+# 型別檢查（需要 Node.js 18+）
+npm run type-check
+```
 
-## � 開發貢獻者
+### 新增功能
 
-- **Jake Chu** ([@jakeuj](https://github.com/jakeuj)) - 🚀 專案創建者 & 主要開發者
-- **GigabyteMickey** ([@GigabyteMickey](https://github.com/GigabyteMickey)) - 🎨 UI/UX 改進專家
-- 專案網站: [edge.jakeuj.com](https://edge.jakeuj.com)
+1. **新增 Composable**
+   - 在 `src/composables/` 建立新檔案
+   - 使用 `export function useSomething()` 格式
+   - 在 `src/composables/index.ts` 匯出
 
-## ☕ 支持專案開發
+2. **新增元件**
+   - 在 `src/popup/components/` 建立 `.vue` 檔案
+   - 使用 `<script setup lang="ts">` 語法
+   - 使用 `<style scoped lang="scss">` 定義樣式
 
-如果這個工具對您有幫助，歡迎請開發者喝杯咖啡！您的支持是我們持續改進的動力 💪
+3. **新增型別**
+   - 在 `src/types/` 建立或修改型別檔案
+   - 在 `src/types/index.ts` 匯出新型別
 
-[![PayPal](https://img.shields.io/badge/PayPal-贊助-blue?style=for-the-badge&logo=paypal)](https://www.paypal.com/ncp/payment/PLYGLLUS2Z8VS)
+## ⚠️ 重要提醒
 
-**💝 任何金額都是對我們最大的鼓勵！**
+### Node.js 版本需求
+此專案需要 **Node.js 18.x 或更新版本** 才能正常建置。如果您使用的是較舊版本的 Node.js，請先升級：
 
-您的贊助將幫助我們：
-- 🔧 持續改進和修復功能
-- ✨ 開發新功能和特色
-- 📚 維護文檔和使用指南
-- 🛡️ 確保安全性和穩定性
+```bash
+# 使用 nvm (Node Version Manager)
+nvm install 18
+nvm use 18
 
-## 📚 文檔
+# 重新安裝相依套件
+npm install
 
-### 自動重新登入功能文檔
+# 建置專案
+npm run build
+```
 
-- 📖 [總覽文件](docs/README_AUTO_RELOGIN.md) - 功能介紹與快速導覽
-- 🚀 [快速開始](docs/QUICK_START_AUTO_RELOGIN.md) - 安裝與測試步驟
-- 📋 [快速參考](docs/QUICK_REFERENCE.md) - 常用指令與 API
-- 📘 [完整說明](docs/AUTO_RELOGIN_FEATURE.md) - 詳細設計與實作
-- 📊 [實作總結](docs/IMPLEMENTATION_SUMMARY.md) - 技術規格與效能分析
-- 📝 [變更日誌](docs/CHANGELOG_AUTO_RELOGIN.md) - 詳細變更記錄
+## 📝 版本歷史
 
-### 其他文檔
+### v2.0.0 (2025-10-08)
+- 🎉 完整遷移至 TypeScript + Vue 3.0
+- ✨ 使用 Composition API 重構所有元件
+- 🎨 實作主題系統（3 種主題）
+- 🔒 改進加密機制
+- 📦 使用 Vite 作為建置工具
+- 🧩 模組化程式碼結構
 
-- 📑 [文檔索引](docs/INDEX.md) - 完整文檔導覽
-- 🛠️ [開發指南](docs/DEVELOPMENT.md) - 開發相關文檔
-- 📦 [發布說明](docs/RELEASE.md) - 版本發布資訊
+### v1.0.0
+- 初始版本（JavaScript + Vanilla JS）
 
-## 🔄 版本歷史
+## 🤝 貢獻
 
-### v1.1.0 (2025-10-03) ✨ **NEW**
-- ✅ 新增自動重新登入功能
-- ✅ 使用 AES-GCM 256-bit 加密儲存密碼
-- ✅ 三種自動重新登入觸發機制
-- ✅ 智能 API 錯誤處理與重試
-- ✅ 完整的測試工具和文檔
+歡迎提交 Issue 和 Pull Request！
 
-### v1.0.0 (2024-09-24)
-- 初始版本發布
-- 實作基本登入功能
-- 實作彈性上班時間計算
-- 實作出勤資料顯示
-- 實作自動更新機制
+## 📄 授權
+
+MIT License
+
+## 👨‍💻 作者
+
+- **Jake Chu** - 原始專案
+- **Augment Agent** - TypeScript + Vue 3 遷移
+
+## 🙏 致謝
+
+感謝所有為這個專案做出貢獻的人！
 
 ---
 
-**免責聲明**: 此擴充套件為非官方工具，僅供個人使用。使用前請確保符合公司相關政策。
+**注意**: 此專案僅供技嘉員工內部使用，請勿用於其他用途。
+
+## 📚 更多資訊
+
+詳細的遷移報告請參閱 [docs/MIGRATION_COMPLETE.md](docs/MIGRATION_COMPLETE.md)
+

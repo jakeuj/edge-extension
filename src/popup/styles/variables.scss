@@ -1,0 +1,112 @@
+/**
+ * SCSS 全域變數
+ * 這些變數會自動注入到所有 SCSS 檔案中
+ */
+
+// ==================== 顏色變數 ====================
+// 這些變數會被 CSS 變數覆蓋，僅作為後備值
+
+// 主色調
+$primary-color: #667eea;
+$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+// 背景色
+$background-color: #ffffff;
+$background-secondary: #f5f5f5;
+$background-card: #f8f9fa;
+
+// 文字顏色
+$text-primary: #333333;
+$text-secondary: #666666;
+$text-muted: #999999;
+$text-inverse: #ffffff;
+
+// 邊框顏色
+$border-color: #ddd;
+$border-light: #e9ecef;
+
+// 狀態顏色
+$success-color: #28a745;
+$warning-color: #ffc107;
+$error-color: #dc3545;
+$info-color: #17a2b8;
+
+// 互動顏色
+$hover-color: rgba(102, 126, 234, 0.1);
+$active-color: rgba(102, 126, 234, 0.2);
+
+// 陰影
+$shadow-color: rgba(0, 0, 0, 0.1);
+$shadow-hover: rgba(102, 126, 234, 0.3);
+
+// ==================== 尺寸變數 ====================
+
+// 間距
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+// 圓角
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+$border-radius-xl: 16px;
+
+// 字體大小
+$font-size-xs: 12px;
+$font-size-sm: 14px;
+$font-size-md: 16px;
+$font-size-lg: 18px;
+$font-size-xl: 20px;
+
+// 字重
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// ==================== 動畫變數 ====================
+
+// 過渡時間
+$transition-fast: 0.15s;
+$transition-base: 0.3s;
+$transition-slow: 0.5s;
+
+// 緩動函數
+$ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+$ease-out: cubic-bezier(0.0, 0, 0.2, 1);
+$ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+// ==================== Z-index 層級 ====================
+
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+
+// ==================== 斷點 ====================
+
+$breakpoint-xs: 0;
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+
+// ==================== 容器尺寸 ====================
+
+$container-width: 400px;
+$container-height: 500px;
+
+// ==================== 其他 ====================
+
+// 陰影層級
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+

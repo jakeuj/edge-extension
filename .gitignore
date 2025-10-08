@@ -48,5 +48,16 @@ http-client.private.env.json
 # 包含敏感資料的檔案
 **/credentials.js
 **/secrets.js
-**/.env
-**/.env.local
+.env
+.env.local
+.env.*.local
+
+# 建置輸出
+dist/
+dist-ssr/
+*.local
+
+# Vite
+.vite/
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
