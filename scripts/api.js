@@ -249,9 +249,42 @@ class ApiManager {
     parseAbnormalAttendance(attendanceData) {
         const allRecords = this.parseHistoryAttendance(attendanceData);
 
-        // 只保留狀態為「異常」的記錄
+        // 取得今天的日期（格式：YYYY-MM-DD）
+        const today = new Date();
+        const todayString = this.formatDateForComparison(today);
+
+        // 只保留狀態為「異常」的記錄，但對當日記錄做特殊處理
         const abnormalRecords = allRecords.filter(record => {
-            return record.status === '異常';
+            // 如果不是異常狀態，直接排除
+            if (record.status !== '異常') {
+                return false;
+            }
+
+            // 判斷是否為當日記錄
+            const isToday = record.sortDate === todayString;
+
+            // 如果是當日記錄，需要額外檢查上班打卡時間
+            if (isToday) {
+                // 如果沒有上班打卡時間，視為異常
+                if (!record.punchIn || record.punchIn === '--:--') {
+                    return true;
+                }
+
+                // 解析上班打卡時間
+                const punchInMinutes = this.parseTimeToMinutes(record.punchIn);
+                if (punchInMinutes === null) {
+                    return true; // 時間格式錯誤，視為異常
+                }
+
+                // 9:30 = 9 * 60 + 30 = 570 分鐘
+                const lateThreshold = 9 * 60 + 30;
+
+                // 只有當上班時間晚於 09:30 時，才將當日記錄標記為異常
+                return punchInMinutes > lateThreshold;
+            }
+
+            // 非當日記錄，維持原有邏輯（狀態為異常就保留）
+            return true;
         });
 
         return abnormalRecords;
