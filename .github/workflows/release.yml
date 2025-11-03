@@ -87,12 +87,15 @@ jobs:
         cp background.js release/
         cp -r scripts release/
         cp -r styles release/
-        
+        cp -r lib release/
+
         # 複製圖示檔案（如果存在）
         if [ -d "icons" ] && [ "$(ls -A icons/*.png 2>/dev/null)" ]; then
           cp -r icons release/
           echo "Copied icon files"
         fi
+
+        echo "Copied lib directory (flip clock files)"
         
         # 建立 ZIP 檔案
         cd release
