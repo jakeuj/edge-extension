@@ -310,8 +310,8 @@ class PopupManager {
                     this.showSuccess('已自動重新登入');
                     await this.loadAttendanceData(showLoading);
                 } else {
-                    // 自動重新登入失敗，顯示登入畫面
-                    await this.showLoginSection();
+                    // 自動重新登入失敗，顯示登入畫面（保留密碼）
+                    await this.showLoginSection(false);
                     this.showError('登入已過期，請重新登入');
                 }
             } else {
@@ -647,7 +647,7 @@ class PopupManager {
     }
 
     // 顯示登入區域
-    async showLoginSection() {
+    async showLoginSection(clearPassword = true) {
         this.hideElement('attendanceSection');
         this.hideElement('settingsSection');
         this.showElement('loginSection');
@@ -661,10 +661,15 @@ class PopupManager {
         // 載入儲存的帳號
         await this.loadSavedAccount();
 
-        // 清空密碼欄位
-        const passwordInput = document.getElementById('password');
-        if (passwordInput) {
-            passwordInput.value = '';
+        // 根據參數決定是否清空密碼欄位
+        if (clearPassword) {
+            const passwordInput = document.getElementById('password');
+            if (passwordInput) {
+                passwordInput.value = '';
+            }
+        } else {
+            // 如果不清空密碼，則嘗試載入已儲存的密碼
+            await this.loadSavedPassword();
         }
     }
 
@@ -692,12 +697,46 @@ class PopupManager {
         try {
             const savedAccount = await window.authManager.getSavedAccount();
             const accountInput = document.getElementById('account');
-            
+
             if (accountInput && savedAccount) {
                 accountInput.value = savedAccount;
             }
         } catch (error) {
             console.error('載入儲存帳號錯誤:', error);
+        }
+    }
+
+    // 載入儲存的密碼
+    async loadSavedPassword() {
+        try {
+            // 檢查是否有加密管理器
+            if (!window.cryptoManager) {
+                console.log('加密管理器未初始化，無法載入密碼');
+                return;
+            }
+
+            // 讀取儲存的憑證
+            const credentialsResult = await window.cryptoManager.loadCredentials();
+
+            if (credentialsResult.success && credentialsResult.password) {
+                const passwordInput = document.getElementById('password');
+                const rememberCheckbox = document.getElementById('remember');
+
+                if (passwordInput) {
+                    passwordInput.value = credentialsResult.password;
+                }
+
+                // 同時勾選「記住登入資訊」選項
+                if (rememberCheckbox) {
+                    rememberCheckbox.checked = true;
+                }
+
+                console.log('已載入儲存的密碼');
+            } else {
+                console.log('無儲存的密碼可載入');
+            }
+        } catch (error) {
+            console.error('載入儲存密碼錯誤:', error);
         }
     }
 
