@@ -73,11 +73,11 @@
         <form id="loginForm">
             <div class="input-group">
                 <label for="account">帳號 (域名\使用者名稱):</label>
-                <input type="text" id="account" placeholder="gigabyte\your.username" required>
+                <input type="text" id="account" name="username" autocomplete="username" placeholder="gigabyte\your.username" required>
             </div>
             <div class="input-group">
                 <label for="password">密碼:</label>
-                <input type="password" id="password" required>
+                <input type="password" id="password" name="password" autocomplete="current-password" required>
             </div>
             <div class="checkbox-group">
                 <input type="checkbox" id="remember">
