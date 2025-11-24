@@ -339,7 +339,6 @@ class TimeCalculator {
                 needLeave: false,
                 leaveHours: 0,
                 leaveMinutes: 0,
-                goldenClockOut: '--:--',
                 deficit: 0,
                 actualDuration: 0,
                 description: '打卡資料不完整'
@@ -356,7 +355,6 @@ class TimeCalculator {
                     needLeave: false,
                     leaveHours: 0,
                     leaveMinutes: 0,
-                    goldenClockOut: '--:--',
                     deficit: 0,
                     actualDuration: 0,
                     description: '時間格式錯誤'
@@ -377,7 +375,6 @@ class TimeCalculator {
                     needLeave: false,
                     leaveHours: 0,
                     leaveMinutes: 0,
-                    goldenClockOut: '--:--',
                     deficit: 0,
                     actualDuration: duration,
                     description: '工作時數充足，無需請假'
@@ -388,11 +385,7 @@ class TimeCalculator {
             const leaveMinutes = Math.ceil(deficit / 30) * 30;
             const leaveHours = leaveMinutes / 60;
 
-            // Step 4: 計算黃金下班時間（可節省30分鐘請假的最佳時間）
-            const T_gold = T_valid_in + TARGET - (leaveMinutes - 30);
-            const goldenClockOut = this.minutesToTimeString(T_gold);
-
-            // Step 5: 智能決定請假區間填寫方向
+            // Step 4: 智能決定請假區間填寫方向
             // 邏輯：遲到填前面（補上班前），早退填後面（補下班後）
             let leaveStartTime, leaveEndTime, leaveDirection;
             const LATE_THRESHOLD = 9 * 60 + 30; // 09:30
@@ -413,7 +406,7 @@ class TimeCalculator {
                 leaveDirection = 'after'; // 補在後面
             }
 
-            // Step 6: 計算效益分析
+            // Step 5: 計算效益分析
             const wastedMinutes = leaveMinutes - deficit;
 
             return {
@@ -423,11 +416,10 @@ class TimeCalculator {
                 leaveStartTime: leaveStartTime,
                 leaveEndTime: leaveEndTime,
                 leaveDirection: leaveDirection,
-                goldenClockOut: goldenClockOut,
                 deficit: deficit,
                 wastedMinutes: wastedMinutes,
                 actualDuration: duration,
-                description: `需請假 ${leaveHours} 小時，建議待到 ${goldenClockOut} 可節省 0.5 小時`
+                description: `需請假 ${leaveHours} 小時 (${leaveStartTime} - ${leaveEndTime})`
             };
 
         } catch (error) {
@@ -436,7 +428,6 @@ class TimeCalculator {
                 needLeave: false,
                 leaveHours: 0,
                 leaveMinutes: 0,
-                goldenClockOut: '--:--',
                 deficit: 0,
                 actualDuration: 0,
                 description: '計算錯誤: ' + error.message

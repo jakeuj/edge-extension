@@ -641,11 +641,6 @@ class PopupManager {
                             <span class="leave-time-range">${leaveStrategy.leaveStartTime} - ${leaveStrategy.leaveEndTime}</span>
                             <span class="leave-duration">(${leaveStrategy.leaveHours} 小時)</span>
                         </div>
-                        <div class="golden-time">
-                            <span class="golden-label">⏰ 黃金下班時間:</span>
-                            <span class="golden-value">${leaveStrategy.goldenClockOut}</span>
-                            <span class="golden-hint">(可省 0.5 小時)</span>
-                        </div>
                         ${efficiencyHint}
                     </div>
                 `;
