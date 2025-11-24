@@ -164,6 +164,12 @@ class PopupManager {
             accountInput.addEventListener('focus', () => this.loadSavedAccount());
         }
 
+        // 記住登入資訊 checkbox 變更事件
+        const rememberCheckbox = document.getElementById('remember');
+        if (rememberCheckbox) {
+            rememberCheckbox.addEventListener('change', (e) => this.handleRememberCheckboxChange(e.target.checked));
+        }
+
         // 選項卡切換
         const tabButtons = document.querySelectorAll('.tab-btn');
         tabButtons.forEach(btn => {
@@ -229,12 +235,18 @@ class PopupManager {
             try {
                 this.showLoading(true, '正在登出...');
 
-                const result = await window.authManager.logout();
+                // 檢查是否有勾選「記住登入資訊」
+                const rememberCheckbox = document.getElementById('remember');
+                const shouldClearCredentials = rememberCheckbox ? !rememberCheckbox.checked : false;
+
+                // 登出時，如果有勾選記住登入資訊，則不清除憑證
+                const result = await window.authManager.logout(shouldClearCredentials);
 
                 if (result.success) {
                     this.clearRefreshInterval();
                     this.clearAutoRefresh();
-                    await this.showLoginSection();
+                    // 登出時不清除密碼欄位，讓使用者可以快速重新登入
+                    await this.showLoginSection(false);
                     this.showSuccess('已登出');
                 } else {
                     throw new Error(result.error);
@@ -596,6 +608,49 @@ class PopupManager {
 
         let html = '';
         abnormalData.forEach(record => {
+            // 計算請假策略
+            const punchIn = window.apiManager.formatTime(record.punchIn);
+            const punchOut = window.apiManager.formatTime(record.punchOut);
+            const leaveStrategy = window.timeCalculator.calculateLeaveStrategy(punchIn, punchOut);
+
+            // 建立請假策略顯示區塊
+            let leaveStrategyHtml = '';
+            if (leaveStrategy.needLeave) {
+                // 判斷效益分析提示
+                let efficiencyHint = '';
+                if (leaveStrategy.wastedMinutes > 10) {
+                    efficiencyHint = `
+                        <div class="efficiency-warning">
+                            <span class="warning-icon">🩸</span>
+                            <span class="warning-text">虧 ${leaveStrategy.wastedMinutes} 分鐘</span>
+                        </div>
+                    `;
+                } else if (leaveStrategy.wastedMinutes > 0) {
+                    efficiencyHint = `
+                        <div class="efficiency-ok">
+                            <span class="ok-icon">✅</span>
+                            <span class="ok-text">合理 (僅浪費 ${leaveStrategy.wastedMinutes} 分)</span>
+                        </div>
+                    `;
+                }
+
+                leaveStrategyHtml = `
+                    <div class="leave-strategy">
+                        <div class="leave-info">
+                            <span class="leave-label">💡 建議請假:</span>
+                            <span class="leave-time-range">${leaveStrategy.leaveStartTime} - ${leaveStrategy.leaveEndTime}</span>
+                            <span class="leave-duration">(${leaveStrategy.leaveHours} 小時)</span>
+                        </div>
+                        <div class="golden-time">
+                            <span class="golden-label">⏰ 黃金下班時間:</span>
+                            <span class="golden-value">${leaveStrategy.goldenClockOut}</span>
+                            <span class="golden-hint">(可省 0.5 小時)</span>
+                        </div>
+                        ${efficiencyHint}
+                    </div>
+                `;
+            }
+
             html += `
                 <div class="abnormal-item">
                     <div class="abnormal-date">
@@ -605,14 +660,15 @@ class PopupManager {
                     <div class="abnormal-details">
                         <div class="time-info">
                             <span class="time-label">上班:</span>
-                            <span class="time-value">${window.apiManager.formatTime(record.punchIn)}</span>
+                            <span class="time-value">${punchIn}</span>
                             <span class="time-label">下班:</span>
-                            <span class="time-value">${window.apiManager.formatTime(record.punchOut)}</span>
+                            <span class="time-value">${punchOut}</span>
                         </div>
                         <div class="work-hours">
                             <span class="work-hours-label">工作時間:</span>
                             <span class="work-hours-value">${record.workHours}</span>
                         </div>
+                        ${leaveStrategyHtml}
                     </div>
                 </div>
             `;
@@ -647,7 +703,7 @@ class PopupManager {
     }
 
     // 顯示登入區域
-    async showLoginSection(clearPassword = true) {
+    async showLoginSection(clearPassword = false) {
         this.hideElement('attendanceSection');
         this.hideElement('settingsSection');
         this.showElement('loginSection');
@@ -737,6 +793,27 @@ class PopupManager {
             }
         } catch (error) {
             console.error('載入儲存密碼錯誤:', error);
+        }
+    }
+
+    // 處理「記住登入資訊」checkbox 變更
+    async handleRememberCheckboxChange(isChecked) {
+        try {
+            if (!isChecked) {
+                // 取消勾選時，清除已儲存的憑證
+                if (window.cryptoManager) {
+                    await window.cryptoManager.clearCredentials();
+                    console.log('已清除儲存的憑證');
+
+                    // 同時清空密碼輸入框
+                    const passwordInput = document.getElementById('password');
+                    if (passwordInput) {
+                        passwordInput.value = '';
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('處理記住登入資訊變更錯誤:', error);
         }
     }
 
