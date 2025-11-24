@@ -164,6 +164,12 @@ class PopupManager {
             accountInput.addEventListener('focus', () => this.loadSavedAccount());
         }
 
+        // 記住登入資訊 checkbox 變更事件
+        const rememberCheckbox = document.getElementById('remember');
+        if (rememberCheckbox) {
+            rememberCheckbox.addEventListener('change', (e) => this.handleRememberCheckboxChange(e.target.checked));
+        }
+
         // 選項卡切換
         const tabButtons = document.querySelectorAll('.tab-btn');
         tabButtons.forEach(btn => {
@@ -229,12 +235,18 @@ class PopupManager {
             try {
                 this.showLoading(true, '正在登出...');
 
-                const result = await window.authManager.logout();
+                // 檢查是否有勾選「記住登入資訊」
+                const rememberCheckbox = document.getElementById('remember');
+                const shouldClearCredentials = rememberCheckbox ? !rememberCheckbox.checked : false;
+
+                // 登出時，如果有勾選記住登入資訊，則不清除憑證
+                const result = await window.authManager.logout(shouldClearCredentials);
 
                 if (result.success) {
                     this.clearRefreshInterval();
                     this.clearAutoRefresh();
-                    await this.showLoginSection();
+                    // 登出時不清除密碼欄位，讓使用者可以快速重新登入
+                    await this.showLoginSection(false);
                     this.showSuccess('已登出');
                 } else {
                     throw new Error(result.error);
@@ -691,7 +703,7 @@ class PopupManager {
     }
 
     // 顯示登入區域
-    async showLoginSection(clearPassword = true) {
+    async showLoginSection(clearPassword = false) {
         this.hideElement('attendanceSection');
         this.hideElement('settingsSection');
         this.showElement('loginSection');
@@ -781,6 +793,27 @@ class PopupManager {
             }
         } catch (error) {
             console.error('載入儲存密碼錯誤:', error);
+        }
+    }
+
+    // 處理「記住登入資訊」checkbox 變更
+    async handleRememberCheckboxChange(isChecked) {
+        try {
+            if (!isChecked) {
+                // 取消勾選時，清除已儲存的憑證
+                if (window.cryptoManager) {
+                    await window.cryptoManager.clearCredentials();
+                    console.log('已清除儲存的憑證');
+
+                    // 同時清空密碼輸入框
+                    const passwordInput = document.getElementById('password');
+                    if (passwordInput) {
+                        passwordInput.value = '';
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('處理記住登入資訊變更錯誤:', error);
         }
     }
 
