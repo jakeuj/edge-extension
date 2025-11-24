@@ -318,6 +318,131 @@ class TimeCalculator {
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}/${month}/${day}`;
     }
+
+    /**
+     * 計算最佳請假策略
+     * 根據實際打卡時間計算需要請假的時數和最佳下班時間
+     *
+     * @param {string} punchIn - 上班打卡時間 (HH:MM)
+     * @param {string} punchOut - 下班打卡時間 (HH:MM)
+     * @returns {Object} 包含請假時數和黃金下班時間的物件
+     */
+    calculateLeaveStrategy(punchIn, punchOut) {
+        // 常數定義
+        const BASE_START = 8 * 60 + 30;  // 08:30 = 510 分鐘
+        const BASE_END = 18 * 60 + 45;   // 18:45 = 1125 分鐘
+        const TARGET = 555;               // 9小時15分鐘 = 555 分鐘
+
+        // 處理無效輸入
+        if (!punchIn || punchIn === '--:--' || !punchOut || punchOut === '--:--') {
+            return {
+                needLeave: false,
+                leaveHours: 0,
+                leaveMinutes: 0,
+                goldenClockOut: '--:--',
+                deficit: 0,
+                actualDuration: 0,
+                description: '打卡資料不完整'
+            };
+        }
+
+        try {
+            // Step 1: 解析時間並計算有效時間
+            const T_in = this.parseTimeToMinutes(punchIn);
+            const T_out = this.parseTimeToMinutes(punchOut);
+
+            if (T_in === null || T_out === null) {
+                return {
+                    needLeave: false,
+                    leaveHours: 0,
+                    leaveMinutes: 0,
+                    goldenClockOut: '--:--',
+                    deficit: 0,
+                    actualDuration: 0,
+                    description: '時間格式錯誤'
+                };
+            }
+
+            // 限制在公司規定的時間範圍內
+            const T_valid_in = Math.max(T_in, BASE_START);
+            const T_valid_out = Math.min(T_out, BASE_END);
+
+            // Step 2: 計算實際工作時長和不足時數
+            const duration = T_valid_out - T_valid_in;
+            const deficit = TARGET - duration;
+
+            // 如果工作時數足夠，不需要請假
+            if (deficit <= 0) {
+                return {
+                    needLeave: false,
+                    leaveHours: 0,
+                    leaveMinutes: 0,
+                    goldenClockOut: '--:--',
+                    deficit: 0,
+                    actualDuration: duration,
+                    description: '工作時數充足，無需請假'
+                };
+            }
+
+            // Step 3: 計算需要請假的時數（向上取整到30分鐘）
+            const leaveMinutes = Math.ceil(deficit / 30) * 30;
+            const leaveHours = leaveMinutes / 60;
+
+            // Step 4: 計算黃金下班時間（可節省30分鐘請假的最佳時間）
+            const T_gold = T_valid_in + TARGET - (leaveMinutes - 30);
+            const goldenClockOut = this.minutesToTimeString(T_gold);
+
+            // Step 5: 智能決定請假區間填寫方向
+            // 邏輯：遲到填前面（補上班前），早退填後面（補下班後）
+            let leaveStartTime, leaveEndTime, leaveDirection;
+            const LATE_THRESHOLD = 9 * 60 + 30; // 09:30
+
+            if (T_in > LATE_THRESHOLD) {
+                // 遲到模式：請假區間填在上班打卡時間之前
+                // 結束時間 = 上班打卡時間
+                leaveEndTime = this.minutesToTimeString(T_in);
+                // 開始時間 = 上班打卡時間 - 請假時數
+                leaveStartTime = this.minutesToTimeString(T_in - leaveMinutes);
+                leaveDirection = 'before'; // 補在前面
+            } else {
+                // 早退模式：請假區間填在下班打卡時間之後
+                // 開始時間 = 下班打卡時間
+                leaveStartTime = this.minutesToTimeString(T_out);
+                // 結束時間 = 下班打卡時間 + 請假時數
+                leaveEndTime = this.minutesToTimeString(T_out + leaveMinutes);
+                leaveDirection = 'after'; // 補在後面
+            }
+
+            // Step 6: 計算效益分析
+            const wastedMinutes = leaveMinutes - deficit;
+
+            return {
+                needLeave: true,
+                leaveHours: leaveHours,
+                leaveMinutes: leaveMinutes,
+                leaveStartTime: leaveStartTime,
+                leaveEndTime: leaveEndTime,
+                leaveDirection: leaveDirection,
+                goldenClockOut: goldenClockOut,
+                deficit: deficit,
+                wastedMinutes: wastedMinutes,
+                actualDuration: duration,
+                description: `需請假 ${leaveHours} 小時，建議待到 ${goldenClockOut} 可節省 0.5 小時`
+            };
+
+        } catch (error) {
+            console.error('計算請假策略錯誤:', error);
+            return {
+                needLeave: false,
+                leaveHours: 0,
+                leaveMinutes: 0,
+                goldenClockOut: '--:--',
+                deficit: 0,
+                actualDuration: 0,
+                description: '計算錯誤: ' + error.message
+            };
+        }
+    }
 }
 
 // 匯出時間計算器實例

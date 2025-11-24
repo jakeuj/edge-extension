@@ -991,6 +991,110 @@ body {
     gap: 6px;
 }
 
+/* 請假策略顯示區塊 */
+.leave-strategy {
+    margin-top: 8px;
+    padding: 8px;
+    background: var(--theme-backgroundCard);
+    border-radius: 4px;
+    border-left: 3px solid var(--theme-warning);
+    transition: all 0.3s ease;
+}
+
+.leave-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.leave-label {
+    font-size: 12px;
+    color: var(--theme-textSecondary);
+    font-weight: 500;
+}
+
+.leave-time-range {
+    font-size: 13px;
+    color: var(--theme-warning);
+    font-weight: 600;
+    background: rgba(255, 193, 7, 0.1);
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+
+.leave-duration {
+    font-size: 12px;
+    color: var(--theme-textMuted);
+    font-weight: 500;
+}
+
+.golden-time {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.golden-label {
+    font-size: 12px;
+    color: var(--theme-textSecondary);
+    font-weight: 500;
+}
+
+.golden-value {
+    font-size: 13px;
+    color: var(--theme-success);
+    font-weight: 600;
+    background: rgba(76, 175, 80, 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.golden-hint {
+    font-size: 11px;
+    color: var(--theme-textMuted);
+    font-style: italic;
+}
+
+/* 效益分析提示 */
+.efficiency-warning,
+.efficiency-ok {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.efficiency-warning {
+    background: rgba(244, 67, 54, 0.1);
+    border-left: 2px solid var(--theme-error);
+}
+
+.efficiency-ok {
+    background: rgba(76, 175, 80, 0.1);
+    border-left: 2px solid var(--theme-success);
+}
+
+.warning-icon,
+.ok-icon {
+    font-size: 14px;
+}
+
+.warning-text {
+    color: var(--theme-error);
+    font-weight: 500;
+}
+
+.ok-text {
+    color: var(--theme-success);
+    font-weight: 500;
+}
+
 .no-abnormal-data {
     text-align: center;
     color: var(--theme-textInverse);

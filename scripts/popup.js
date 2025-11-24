@@ -596,6 +596,49 @@ class PopupManager {
 
         let html = '';
         abnormalData.forEach(record => {
+            // 計算請假策略
+            const punchIn = window.apiManager.formatTime(record.punchIn);
+            const punchOut = window.apiManager.formatTime(record.punchOut);
+            const leaveStrategy = window.timeCalculator.calculateLeaveStrategy(punchIn, punchOut);
+
+            // 建立請假策略顯示區塊
+            let leaveStrategyHtml = '';
+            if (leaveStrategy.needLeave) {
+                // 判斷效益分析提示
+                let efficiencyHint = '';
+                if (leaveStrategy.wastedMinutes > 10) {
+                    efficiencyHint = `
+                        <div class="efficiency-warning">
+                            <span class="warning-icon">🩸</span>
+                            <span class="warning-text">虧 ${leaveStrategy.wastedMinutes} 分鐘</span>
+                        </div>
+                    `;
+                } else if (leaveStrategy.wastedMinutes > 0) {
+                    efficiencyHint = `
+                        <div class="efficiency-ok">
+                            <span class="ok-icon">✅</span>
+                            <span class="ok-text">合理 (僅浪費 ${leaveStrategy.wastedMinutes} 分)</span>
+                        </div>
+                    `;
+                }
+
+                leaveStrategyHtml = `
+                    <div class="leave-strategy">
+                        <div class="leave-info">
+                            <span class="leave-label">💡 建議請假:</span>
+                            <span class="leave-time-range">${leaveStrategy.leaveStartTime} - ${leaveStrategy.leaveEndTime}</span>
+                            <span class="leave-duration">(${leaveStrategy.leaveHours} 小時)</span>
+                        </div>
+                        <div class="golden-time">
+                            <span class="golden-label">⏰ 黃金下班時間:</span>
+                            <span class="golden-value">${leaveStrategy.goldenClockOut}</span>
+                            <span class="golden-hint">(可省 0.5 小時)</span>
+                        </div>
+                        ${efficiencyHint}
+                    </div>
+                `;
+            }
+
             html += `
                 <div class="abnormal-item">
                     <div class="abnormal-date">
@@ -605,14 +648,15 @@ class PopupManager {
                     <div class="abnormal-details">
                         <div class="time-info">
                             <span class="time-label">上班:</span>
-                            <span class="time-value">${window.apiManager.formatTime(record.punchIn)}</span>
+                            <span class="time-value">${punchIn}</span>
                             <span class="time-label">下班:</span>
-                            <span class="time-value">${window.apiManager.formatTime(record.punchOut)}</span>
+                            <span class="time-value">${punchOut}</span>
                         </div>
                         <div class="work-hours">
                             <span class="work-hours-label">工作時間:</span>
                             <span class="work-hours-value">${record.workHours}</span>
                         </div>
+                        ${leaveStrategyHtml}
                     </div>
                 </div>
             `;
