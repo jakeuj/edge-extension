@@ -320,18 +320,20 @@ class TimeCalculator {
     }
 
     /**
-     * 計算最佳請假策略
-     * 根據實際打卡時間計算需要請假的時數和最佳下班時間
+     * 計算最佳請假策略（雙向工時補償邏輯）
+     * 根據實際打卡時間計算需要請假的時數和最佳請假區間
      *
      * @param {string} punchIn - 上班打卡時間 (HH:MM)
      * @param {string} punchOut - 下班打卡時間 (HH:MM)
-     * @returns {Object} 包含請假時數和黃金下班時間的物件
+     * @returns {Object} 包含請假時數和請假區間的物件
      */
     calculateLeaveStrategy(punchIn, punchOut) {
         // 常數定義
-        const BASE_START = 8 * 60 + 30;  // 08:30 = 510 分鐘
-        const BASE_END = 18 * 60 + 45;   // 18:45 = 1125 分鐘
-        const TARGET = 555;               // 9小時15分鐘 = 555 分鐘
+        const BASE_START = 8 * 60 + 30;      // 08:30 = 510 分鐘（正常上班時間）
+        const BASE_END = 18 * 60 + 45;       // 18:45 = 1125 分鐘（正常下班時間）
+        const EARLY_CLOCK_OUT = 17 * 60 + 45; // 17:45 = 1065 分鐘（早退判定線）
+        const LATE_THRESHOLD = 9 * 60 + 30;  // 09:30 = 570 分鐘（遲到容忍線）
+        const TARGET = 555;                   // 9小時15分鐘 = 555 分鐘（目標工時）
 
         // 處理無效輸入
         if (!punchIn || punchIn === '--:--' || !punchOut || punchOut === '--:--') {
@@ -365,7 +367,7 @@ class TimeCalculator {
             const T_valid_in = Math.max(T_in, BASE_START);
             const T_valid_out = Math.min(T_out, BASE_END);
 
-            // Step 2: 計算實際工作時長和不足時數
+            // Step 2: 計算實際工作時長和工時缺口
             const duration = T_valid_out - T_valid_in;
             const deficit = TARGET - duration;
 
@@ -385,29 +387,122 @@ class TimeCalculator {
             const leaveMinutes = Math.ceil(deficit / 30) * 30;
             const leaveHours = leaveMinutes / 60;
 
-            // Step 4: 智能決定請假區間填寫方向
-            // 邏輯：遲到填前面（補上班前），早退填後面（補下班後）
+            // Step 4: 雙向工時補償邏輯
             let leaveStartTime, leaveEndTime, leaveDirection;
-            const LATE_THRESHOLD = 9 * 60 + 30; // 09:30
+            let behaviorSuggestion = '';
 
-            if (T_in > LATE_THRESHOLD) {
-                // 遲到模式：請假區間填在上班打卡時間之前
-                // 結束時間 = 上班打卡時間
+            // 情況 A：下班卡 ≥ 18:45（下班達標）
+            if (T_out >= BASE_END) {
+                // 缺口全部補在上班段，最早可補至 09:30
                 leaveEndTime = this.minutesToTimeString(T_in);
-                // 開始時間 = 上班打卡時間 - 請假時數
-                leaveStartTime = this.minutesToTimeString(T_in - leaveMinutes);
-                leaveDirection = 'before'; // 補在前面
-            } else {
-                // 早退模式：請假區間填在下班打卡時間之後
-                // 開始時間 = 下班打卡時間
-                leaveStartTime = this.minutesToTimeString(T_out);
-                // 結束時間 = 下班打卡時間 + 請假時數
-                leaveEndTime = this.minutesToTimeString(T_out + leaveMinutes);
-                leaveDirection = 'after'; // 補在後面
+                const calculatedStartTime = T_in - leaveMinutes;
+                leaveStartTime = this.minutesToTimeString(Math.max(LATE_THRESHOLD, calculatedStartTime));
+                leaveDirection = 'before';
+            }
+            // 情況 B：17:45 ≤ 下班卡 < 18:45（部分下班不足）
+            else if (T_out >= EARLY_CLOCK_OUT && T_out < BASE_END) {
+                // 計算理論最晚上班時間
+                const diff = BASE_END - T_out;
+                const theoreticalLatestStart = LATE_THRESHOLD - diff;
+
+                // 優先從上班段補
+                leaveEndTime = this.minutesToTimeString(T_in);
+                const calculatedStartTime = T_in - leaveMinutes;
+                const actualStartTime = Math.max(theoreticalLatestStart, calculatedStartTime);
+
+                // 檢查上班段是否能補滿
+                const morningCapacity = T_in - theoreticalLatestStart;
+
+                if (leaveMinutes <= morningCapacity) {
+                    // 上班段可以補滿
+                    leaveStartTime = this.minutesToTimeString(actualStartTime);
+                    leaveDirection = 'before';
+                } else {
+                    // 上班段補不滿，需要雙向補
+                    const morningLeave = morningCapacity;
+                    const afternoonLeave = leaveMinutes - morningLeave;
+
+                    leaveStartTime = this.minutesToTimeString(theoreticalLatestStart);
+                    leaveEndTime = this.minutesToTimeString(Math.min(T_out + afternoonLeave, BASE_END));
+                    leaveDirection = 'both';
+
+                    // 特殊處理：返回雙區間資訊
+                    return {
+                        needLeave: true,
+                        leaveHours: leaveHours,
+                        leaveMinutes: leaveMinutes,
+                        leaveStartTime: leaveStartTime,
+                        leaveEndTime: this.minutesToTimeString(T_in),
+                        leaveStartTime2: this.minutesToTimeString(T_out),
+                        leaveEndTime2: leaveEndTime,
+                        leaveDirection: 'both',
+                        deficit: deficit,
+                        wastedMinutes: leaveMinutes - deficit,
+                        actualDuration: duration,
+                        behaviorSuggestion: behaviorSuggestion,
+                        description: `需請假 ${leaveHours} 小時 (上班段: ${leaveStartTime} - ${this.minutesToTimeString(T_in)}, 下班段: ${this.minutesToTimeString(T_out)} - ${leaveEndTime})`
+                    };
+                }
+            }
+            // 情況 C：下班卡 < 17:45（早退）
+            else {
+                // 優先從上班段往前補至 08:30
+                leaveEndTime = this.minutesToTimeString(T_in);
+                const calculatedStartTime = T_in - leaveMinutes;
+                const actualStartTime = Math.max(BASE_START, calculatedStartTime);
+
+                // 檢查上班段是否能補滿
+                const morningCapacity = T_in - BASE_START;
+
+                if (leaveMinutes <= morningCapacity) {
+                    // 上班段可以補滿
+                    leaveStartTime = this.minutesToTimeString(actualStartTime);
+                    leaveDirection = 'before';
+                } else {
+                    // 上班段補不滿，剩餘補至下班段
+                    const morningLeave = morningCapacity;
+                    const afternoonLeave = leaveMinutes - morningLeave;
+
+                    leaveStartTime = this.minutesToTimeString(BASE_START);
+                    const afternoonEndTime = Math.min(T_out + afternoonLeave, BASE_END);
+                    leaveEndTime = this.minutesToTimeString(afternoonEndTime);
+                    leaveDirection = 'both';
+
+                    // 特殊處理：返回雙區間資訊
+                    return {
+                        needLeave: true,
+                        leaveHours: leaveHours,
+                        leaveMinutes: leaveMinutes,
+                        leaveStartTime: leaveStartTime,
+                        leaveEndTime: this.minutesToTimeString(T_in),
+                        leaveStartTime2: this.minutesToTimeString(T_out),
+                        leaveEndTime2: leaveEndTime,
+                        leaveDirection: 'both',
+                        deficit: deficit,
+                        wastedMinutes: leaveMinutes - deficit,
+                        actualDuration: duration,
+                        behaviorSuggestion: behaviorSuggestion,
+                        description: `需請假 ${leaveHours} 小時 (上班段: ${leaveStartTime} - ${this.minutesToTimeString(T_in)}, 下班段: ${this.minutesToTimeString(T_out)} - ${leaveEndTime})`
+                    };
+                }
             }
 
-            // Step 5: 計算效益分析
+            // Step 5: 計算效益分析與行為建議
             const wastedMinutes = leaveMinutes - deficit;
+
+            if (wastedMinutes > 10) {
+                // 計算如果多待或晚來可以節省的請假時數
+                const nextLowerLeave = Math.floor(deficit / 30) * 30;
+                const minutesToSave = deficit - nextLowerLeave;
+
+                if (minutesToSave > 0 && minutesToSave <= 30) {
+                    if (T_out < BASE_END) {
+                        behaviorSuggestion = `💡 若多待 ${minutesToSave} 分鐘可少請 30 分鐘假`;
+                    } else if (T_in > BASE_START) {
+                        behaviorSuggestion = `💡 若早來 ${minutesToSave} 分鐘可少請 30 分鐘假`;
+                    }
+                }
+            }
 
             return {
                 needLeave: true,
@@ -419,6 +514,7 @@ class TimeCalculator {
                 deficit: deficit,
                 wastedMinutes: wastedMinutes,
                 actualDuration: duration,
+                behaviorSuggestion: behaviorSuggestion,
                 description: `需請假 ${leaveHours} 小時 (${leaveStartTime} - ${leaveEndTime})`
             };
 
