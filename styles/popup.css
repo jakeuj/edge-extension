@@ -1067,6 +1067,46 @@ body {
     font-weight: 500;
 }
 
+/* 雙區間請假顯示 */
+.leave-time-ranges {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.leave-time-range-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+}
+
+.range-label {
+    font-size: 11px;
+    color: var(--theme-textMuted);
+    font-weight: 500;
+    min-width: 50px;
+}
+
+/* 行為建議提示 */
+.behavior-suggestion {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    background: rgba(33, 150, 243, 0.1);
+    border-left: 2px solid var(--theme-info);
+}
+
+.suggestion-text {
+    color: var(--theme-info);
+    font-weight: 500;
+}
+
 .no-abnormal-data {
     text-align: center;
     color: var(--theme-textInverse);
