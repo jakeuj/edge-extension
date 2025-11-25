@@ -51,7 +51,8 @@ class PopupManager {
                 await this.loadAllData();
                 this.startAutoRefresh();
             } else {
-                await this.showLoginSection();
+                // 初始化時載入已儲存的密碼
+                await this.showLoginSection(false, true);
             }
             
             this.isInitialized = true;
@@ -698,7 +699,7 @@ class PopupManager {
     }
 
     // 顯示登入區域
-    async showLoginSection(clearPassword = false) {
+    async showLoginSection(clearPassword = false, loadSavedPassword = false) {
         this.hideElement('attendanceSection');
         this.hideElement('settingsSection');
         this.showElement('loginSection');
@@ -712,16 +713,18 @@ class PopupManager {
         // 載入儲存的帳號
         await this.loadSavedAccount();
 
-        // 根據參數決定是否清空密碼欄位
+        // 根據參數決定密碼欄位的處理方式
         if (clearPassword) {
+            // 明確要求清空密碼
             const passwordInput = document.getElementById('password');
             if (passwordInput) {
                 passwordInput.value = '';
             }
-        } else {
-            // 如果不清空密碼，則嘗試載入已儲存的密碼
+        } else if (loadSavedPassword) {
+            // 明確要求載入已儲存的密碼（僅在初始化時）
             await this.loadSavedPassword();
         }
+        // 否則保持密碼欄位的當前值不變
     }
 
     // 顯示出勤區域
@@ -978,7 +981,8 @@ class PopupManager {
             if (isLoggedIn) {
                 await this.showAttendanceSection();
             } else {
-                await this.showLoginSection();
+                // 從設定返回時保留密碼欄位的當前值
+                await this.showLoginSection(false, false);
             }
         } catch (error) {
             console.error('返回主頁面失敗:', error);
