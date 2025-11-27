@@ -436,26 +436,14 @@
 
             <section class="section">
                 <h2>🚀 安裝指南</h2>
-                
-                <h3>方法一：從 Microsoft Edge 商店安裝（推薦）</h3>
-                <div class="install-steps">
-                    <ol>
-                        <li>開啟 Microsoft Edge 瀏覽器</li>
-                        <li>前往 Edge 附加元件商店</li>
-                        <li>搜尋「技嘉出勤時間追蹤器」</li>
-                        <li>點擊「取得」進行安裝</li>
-                        <li>安裝完成後，點擊瀏覽器工具列上的擴充套件圖示</li>
-                    </ol>
-                </div>
 
-                <h3>方法二：手動安裝開發版本</h3>
                 <div class="install-steps">
                     <ol>
-                        <li>下載專案檔案到本機</li>
+                        <li><a href="https://github.com/jakeuj/edge-extension/releases" target="_blank">下載最新版本</a> 並解壓縮到本機</li>
                         <li>開啟 Microsoft Edge，前往 <code>edge://extensions/</code></li>
                         <li>開啟右上角的「開發人員模式」</li>
                         <li>點擊「載入解壓縮」按鈕</li>
-                        <li>選擇下載的專案資料夾</li>
+                        <li>選擇解壓縮後的專案資料夾</li>
                         <li>擴充套件安裝完成！</li>
                     </ol>
                 </div>
@@ -495,6 +483,50 @@
                     <li>建議定期更新擴充套件以獲得最新功能</li>
                 </ul>
             </div>
+
+            <section class="section">
+                <h2>📝 版本更新紀錄</h2>
+
+                <div class="install-steps" style="background: #f8f9fa;">
+                    <h4 style="color: #667eea; margin-bottom: 15px;">v1.3.0 <span style="color: #28a745; font-size: 0.8rem;">（最新版本）</span></h4>
+                    <ul>
+                        <li>✨ 新增雙向工時補償邏輯</li>
+                        <li>✨ 新增行為建議提示功能</li>
+                        <li>🔧 簡化請假策略顯示</li>
+                    </ul>
+                </div>
+
+                <div class="install-steps" style="background: #f8f9fa; margin-top: 15px;">
+                    <h4 style="color: #667eea; margin-bottom: 15px;">v1.2.1</h4>
+                    <ul>
+                        <li>✨ 智能請假策略計算與效益分析</li>
+                        <li>♻️ 移除黃金下班時間相關功能</li>
+                    </ul>
+                </div>
+
+                <div class="install-steps" style="background: #f8f9fa; margin-top: 15px;">
+                    <h4 style="color: #667eea; margin-bottom: 15px;">v1.2.0</h4>
+                    <ul>
+                        <li>✨ 新增「記住登入資訊」選項</li>
+                        <li>✨ 新增請假策略計算與顯示區塊</li>
+                    </ul>
+                </div>
+
+                <div class="install-steps" style="background: #f8f9fa; margin-top: 15px;">
+                    <h4 style="color: #667eea; margin-bottom: 15px;">v1.1.x</h4>
+                    <ul>
+                        <li>🔐 自動重新登入功能（Token 過期時自動處理）</li>
+                        <li>🔒 密碼加密儲存（AES-GCM 256-bit）</li>
+                        <li>🐛 修正當日出勤異常判斷邏輯</li>
+                        <li>🐛 修復翻頁時鐘打包後無法顯示的問題</li>
+                        <li>🐛 修復內網連接失敗時自動清除密碼的問題</li>
+                    </ul>
+                </div>
+
+                <p style="margin-top: 20px; text-align: center;">
+                    <a href="https://github.com/jakeuj/edge-extension/releases" target="_blank" style="color: #667eea;">📋 查看完整版本紀錄</a>
+                </p>
+            </section>
         </div>
 
         <!-- 貢獻者區塊 -->
@@ -556,7 +588,7 @@
         </div>
 
         <footer class="footer">
-            <p>&copy; 2024 技嘉出勤時間追蹤器 | 由 Jake Chu 開發 | MIT License</p>
+            <p>&copy; 2024-2025 技嘉出勤時間追蹤器 | 由 Jake Chu 開發 | MIT License</p>
             <p>🌐 <a href="https://edge.jakeuj.com" style="color: white;">edge.jakeuj.com</a></p>
         </footer>
     </div>
