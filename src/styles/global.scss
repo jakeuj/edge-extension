@@ -1,0 +1,296 @@
+// ============================================
+// 全域樣式
+// ============================================
+
+@use './variables' as *;
+@use './mixins' as *;
+
+// ============================================
+// 主題系統
+// ============================================
+
+// 預設主題 (Light)
+:root {
+  @include theme-colors('light');
+
+  // 狀態顏色
+  --theme-success: #{$success};
+  --theme-warning: #{$warning};
+  --theme-error: #{$error};
+  --theme-info: #{$info};
+
+  // 互動顏色
+  --theme-hover: rgba(102, 126, 234, 0.1);
+  --theme-active: rgba(102, 126, 234, 0.2);
+
+  // 陰影
+  --theme-shadow: rgba(0, 0, 0, 0.1);
+  --theme-shadow-hover: rgba(102, 126, 234, 0.3);
+
+  // 別名變數（為了兼容組件中的使用）
+  --color-primary: var(--theme-primary);
+  --color-primary-dark: #5568d3;
+  --color-primary-light: rgba(102, 126, 234, 0.1);
+  --color-primary-rgb: 102, 126, 234;
+  --color-background: var(--theme-background);
+  --color-surface: var(--theme-background-card);
+  --color-text-primary: var(--theme-text-primary);
+  --color-text-secondary: var(--theme-text-secondary);
+  --color-text-muted: var(--theme-text-muted);
+  --color-border: var(--theme-border);
+  --color-success: var(--theme-success);
+  --color-success-light: rgba(40, 167, 69, 0.1);
+  --color-warning: var(--theme-warning);
+  --color-warning-light: rgba(255, 193, 7, 0.1);
+  --color-error: var(--theme-error);
+  --color-error-dark: #c82333;
+  --color-error-light: rgba(220, 53, 69, 0.1);
+  --color-info: var(--theme-info);
+  --color-info-light: rgba(23, 162, 184, 0.1);
+
+  // Spacing
+  --spacing-xs: #{$spacing-xs};
+  --spacing-sm: #{$spacing-sm};
+  --spacing-md: #{$spacing-md};
+  --spacing-lg: #{$spacing-lg};
+  --spacing-xl: #{$spacing-xl};
+  --spacing-2xl: #{$spacing-2xl};
+
+  // Border Radius
+  --border-radius-sm: #{$border-radius-small};
+  --border-radius-md: #{$border-radius};
+  --border-radius-lg: #{$border-radius-large};
+
+  // Font Sizes
+  --font-size-xs: #{$font-size-xs};
+  --font-size-sm: #{$font-size-sm};
+  --font-size-base: #{$font-size-base};
+  --font-size-md: #{$font-size-base};
+  --font-size-lg: #{$font-size-lg};
+  --font-size-xl: #{$font-size-xl};
+  --font-size-2xl: #{$font-size-2xl};
+
+  // Font Weights
+  --font-weight-normal: #{$font-weight-normal};
+  --font-weight-medium: #{$font-weight-medium};
+  --font-weight-semibold: #{$font-weight-semibold};
+  --font-weight-bold: #{$font-weight-bold};
+
+  // Shadows
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+
+  // Font Family
+  --font-family-base: #{$font-family-base};
+}
+
+// Dark Theme
+[data-theme='dark'] {
+  @include theme-colors('dark');
+
+  // 狀態顏色
+  --theme-success: #{$dark-success};
+  --theme-warning: #{$dark-warning};
+  --theme-error: #{$dark-error};
+  --theme-info: #{$dark-info};
+
+  // 互動顏色
+  --theme-hover: rgba(124, 58, 237, 0.2);
+  --theme-active: rgba(124, 58, 237, 0.3);
+
+  // 陰影
+  --theme-shadow: rgba(0, 0, 0, 0.3);
+  --theme-shadow-hover: rgba(124, 58, 237, 0.4);
+
+  // 別名變數（Dark 主題特定顏色）
+  --color-primary-dark: #6d28d9;
+  --color-primary-light: rgba(124, 58, 237, 0.2);
+  --color-primary-rgb: 124, 58, 237;
+  --color-success-light: rgba(16, 185, 129, 0.2);
+  --color-warning-light: rgba(245, 158, 11, 0.2);
+  --color-error-dark: #dc2626;
+  --color-error-light: rgba(239, 68, 68, 0.2);
+  --color-info-light: rgba(6, 182, 212, 0.2);
+}
+
+// Morandi Theme
+[data-theme='morandi'] {
+  @include theme-colors('morandi');
+
+  // 狀態顏色
+  --theme-success: #{$morandi-success};
+  --theme-warning: #{$morandi-warning};
+  --theme-error: #{$morandi-error};
+  --theme-info: #{$morandi-info};
+
+  // 互動顏色
+  --theme-hover: rgba(139, 157, 195, 0.15);
+  --theme-active: rgba(139, 157, 195, 0.25);
+
+  // 陰影
+  --theme-shadow: rgba(74, 74, 74, 0.08);
+  --theme-shadow-hover: rgba(139, 157, 195, 0.2);
+
+  // 別名變數（Morandi 主題特定顏色）
+  --color-primary-dark: #7a8bb5;
+  --color-primary-light: rgba(139, 157, 195, 0.15);
+  --color-primary-rgb: 139, 157, 195;
+  --color-success-light: rgba(168, 196, 162, 0.15);
+  --color-warning-light: rgba(212, 184, 150, 0.15);
+  --color-error-dark: #b08e8e;
+  --color-error-light: rgba(196, 162, 162, 0.15);
+  --color-info-light: rgba(162, 184, 196, 0.15);
+}
+
+// ============================================
+// 基本樣式
+// ============================================
+
+// 基本重置
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// HTML & Body (匹配原始版本)
+html,
+body {
+  width: $popup-width;
+  height: $popup-height;
+  overflow: hidden;
+  font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: $font-size-base; // 14px
+  line-height: 1.4; // 原始版本使用 1.4
+  color: var(--theme-text-primary);
+  background: var(--theme-background-secondary); // 原始版本使用 backgroundSecondary
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+}
+
+// 應用容器
+#app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+// 標題 (匹配原始版本)
+h1, h2, h3, h4, h5, h6 {
+  font-weight: $font-weight-semibold;
+  color: var(--theme-text-primary);
+  line-height: 1.2;
+  margin: 0;
+}
+
+h1 { font-size: $font-size-xl; }    // 18px (Header 標題)
+h2 { font-size: $font-size-lg; }    // 16px (Login 標題)
+h3 { font-size: $font-size-xl; }    // 18px (Info card 標題)
+h4 { font-size: $font-size-base; }  // 14px
+h5 { font-size: $font-size-sm; }    // 14px
+h6 { font-size: $font-size-xs; }    // 12px
+
+// 連結
+a {
+  color: var(--theme-primary);
+  text-decoration: none;
+  transition: color $transition-base;
+  
+  &:hover {
+    color: var(--theme-primary);
+    opacity: 0.8;
+  }
+}
+
+// 按鈕
+button {
+  @include button-base;
+}
+
+// 輸入框
+input,
+textarea,
+select {
+  @include input-base;
+}
+
+// 列表
+ul, ol {
+  list-style: none;
+}
+
+// 圖片
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+// 滾動條
+* {
+  @include custom-scrollbar;
+}
+
+// 工具類別
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.font-bold { font-weight: $font-weight-bold; }
+.font-semibold { font-weight: $font-weight-semibold; }
+.font-medium { font-weight: $font-weight-medium; }
+
+.text-primary { color: var(--theme-text-primary); }
+.text-secondary { color: var(--theme-text-secondary); }
+.text-muted { color: var(--theme-text-muted); }
+
+.bg-primary { background: var(--theme-primary); }
+.bg-card { background: var(--theme-background-card); }
+
+// 間距工具類別
+.mt-xs { margin-top: $spacing-xs; }
+.mt-sm { margin-top: $spacing-sm; }
+.mt-md { margin-top: $spacing-md; }
+.mt-lg { margin-top: $spacing-lg; }
+.mt-xl { margin-top: $spacing-xl; }
+
+.mb-xs { margin-bottom: $spacing-xs; }
+.mb-sm { margin-bottom: $spacing-sm; }
+.mb-md { margin-bottom: $spacing-md; }
+.mb-lg { margin-bottom: $spacing-lg; }
+.mb-xl { margin-bottom: $spacing-xl; }
+
+.p-xs { padding: $spacing-xs; }
+.p-sm { padding: $spacing-sm; }
+.p-md { padding: $spacing-md; }
+.p-lg { padding: $spacing-lg; }
+.p-xl { padding: $spacing-xl; }
+
+// 過渡動畫
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity $transition-base;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform $transition-base;
+}
+
+.slide-enter-from {
+  transform: translateX(-100%);
+}
+
+.slide-leave-to {
+  transform: translateX(100%);
+}
+

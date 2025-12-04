@@ -1,0 +1,112 @@
+// ============================================
+// SCSS 變數定義
+// ============================================
+
+// 主題顏色 - Light Theme
+$light-primary: #667eea;
+$light-primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$light-background: #ffffff;
+$light-background-secondary: #f5f5f5;
+$light-background-card: #f8f9fa;
+$light-text-primary: #333333;
+$light-text-secondary: #666666;
+$light-text-muted: #999999;
+$light-text-inverse: #ffffff;
+$light-border: #ddd;
+$light-border-light: #e9ecef;
+
+// 主題顏色 - Dark Theme
+$dark-primary: #7c3aed;
+$dark-primary-gradient: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+$dark-background: #1a1a1a;
+$dark-background-secondary: #2d2d2d;
+$dark-background-card: #333333;
+$dark-text-primary: #ffffff;
+$dark-text-secondary: #cccccc;
+$dark-text-muted: #888888;
+$dark-text-inverse: #1a1a1a;
+$dark-border: #444444;
+$dark-border-light: #555555;
+
+// 主題顏色 - Morandi Theme
+$morandi-primary: #8b9dc3;
+$morandi-primary-gradient: linear-gradient(135deg, #8b9dc3 0%, #a8b5d1 100%);
+$morandi-background: #f7f5f3;
+$morandi-background-secondary: #f0ede8;
+$morandi-background-card: #faf8f5;
+$morandi-text-primary: #4a4a4a;
+$morandi-text-secondary: #6b6b6b;
+$morandi-text-muted: #9a9a9a;
+$morandi-text-inverse: #f7f5f3;
+$morandi-border: #d4cfc7;
+$morandi-border-light: #e6e1d8;
+
+// 狀態顏色
+$success: #28a745;
+$warning: #ffc107;
+$error: #dc3545;
+$info: #17a2b8;
+
+// 深色主題狀態顏色
+$dark-success: #10b981;
+$dark-warning: #f59e0b;
+$dark-error: #ef4444;
+$dark-info: #06b6d4;
+
+// 莫蘭迪主題狀態顏色
+$morandi-success: #a8c4a2;
+$morandi-warning: #d4b896;
+$morandi-error: #c4a2a2;
+$morandi-info: #a2b8c4;
+
+// 尺寸
+$popup-width: 400px;
+$popup-height: 500px;
+$header-height: 60px;
+$border-radius: 8px;
+$border-radius-small: 4px;
+$border-radius-large: 12px;
+
+// 間距 (匹配原始版本)
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 12px;  // 原始版本常用 12px
+$spacing-lg: 16px;  // 原始版本 container/section padding 使用 16px
+$spacing-xl: 20px;  // 原始版本 info-card padding 使用 20px
+$spacing-2xl: 24px; // 額外的大間距
+
+// 字體大小 (匹配原始版本的 px 值)
+$font-size-xs: 0.75rem;    // 12px
+$font-size-sm: 0.875rem;   // 14px
+$font-size-base: 0.875rem; // 14px (原始版本 body 使用 14px)
+$font-size-lg: 1rem;       // 16px (原始版本 h2 使用 16px)
+$font-size-xl: 1.125rem;   // 18px (原始版本 h1, h3 使用 18px)
+$font-size-2xl: 1.25rem;   // 20px
+$font-size-3xl: 1.5rem;    // 24px
+
+// 字體粗細
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// 字體家族
+$font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+
+// 陰影
+$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+
+// 過渡動畫
+$transition-fast: 150ms ease-in-out;
+$transition-base: 300ms ease-in-out;
+$transition-slow: 500ms ease-in-out;
+
+// Z-index 層級
+$z-index-dropdown: 1000;
+$z-index-modal: 1050;
+$z-index-overlay: 1100;
+$z-index-tooltip: 1200;
+

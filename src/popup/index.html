@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>技嘉出勤時間追蹤器</title>
+  <style>
+    /* 防止閃爍的基本樣式 */
+    body {
+      margin: 0;
+      padding: 0;
+      width: 400px;
+      min-height: 500px;
+      overflow: hidden;
+    }
+    
+    #app {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 載入動畫 */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 500px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="loading">載入中...</div>
+  </div>
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>
+

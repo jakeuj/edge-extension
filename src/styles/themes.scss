@@ -1,0 +1,64 @@
+// ============================================
+// 主題系統
+// ============================================
+
+@use './variables' as *;
+@use './mixins' as *;
+
+// 預設主題 (Light)
+:root {
+  @include theme-colors('light');
+  
+  // 狀態顏色
+  --theme-success: #{$success};
+  --theme-warning: #{$warning};
+  --theme-error: #{$error};
+  --theme-info: #{$info};
+  
+  // 互動顏色
+  --theme-hover: rgba(102, 126, 234, 0.1);
+  --theme-active: rgba(102, 126, 234, 0.2);
+  
+  // 陰影
+  --theme-shadow: rgba(0, 0, 0, 0.1);
+  --theme-shadow-hover: rgba(102, 126, 234, 0.3);
+}
+
+// Dark Theme
+[data-theme='dark'] {
+  @include theme-colors('dark');
+  
+  // 狀態顏色
+  --theme-success: #{$dark-success};
+  --theme-warning: #{$dark-warning};
+  --theme-error: #{$dark-error};
+  --theme-info: #{$dark-info};
+  
+  // 互動顏色
+  --theme-hover: rgba(124, 58, 237, 0.2);
+  --theme-active: rgba(124, 58, 237, 0.3);
+  
+  // 陰影
+  --theme-shadow: rgba(0, 0, 0, 0.3);
+  --theme-shadow-hover: rgba(124, 58, 237, 0.4);
+}
+
+// Morandi Theme
+[data-theme='morandi'] {
+  @include theme-colors('morandi');
+  
+  // 狀態顏色
+  --theme-success: #{$morandi-success};
+  --theme-warning: #{$morandi-warning};
+  --theme-error: #{$morandi-error};
+  --theme-info: #{$morandi-info};
+  
+  // 互動顏色
+  --theme-hover: rgba(139, 157, 195, 0.15);
+  --theme-active: rgba(139, 157, 195, 0.25);
+  
+  // 陰影
+  --theme-shadow: rgba(74, 74, 74, 0.08);
+  --theme-shadow-hover: rgba(139, 157, 195, 0.2);
+}
+

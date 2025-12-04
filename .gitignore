@@ -1,6 +1,10 @@
 # 敏感資訊檔案
 *.json
 !manifest.json
+!package.json
+!tsconfig.json
+!tsconfig.node.json
+!src/manifest.json
 
 # 測試檔案
 app.http
@@ -50,3 +54,11 @@ http-client.private.env.json
 **/secrets.js
 **/.env
 **/.env.local
+
+# Vite & Build
+dist/
+dist-ssr/
+*.local
+
+# TypeScript
+*.tsbuildinfo

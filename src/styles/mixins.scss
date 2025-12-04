@@ -1,0 +1,165 @@
+// ============================================
+// SCSS Mixins
+// ============================================
+
+@use './variables' as *;
+
+// Flexbox 快捷方式
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// 文字省略
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin text-ellipsis-multiline($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// 按鈕樣式 (匹配原始版本)
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-md; // 原始版本使用 12px
+  border: none;
+  border-radius: $border-radius-small; // 原始版本使用 4px
+  font-size: $font-size-base; // 14px
+  font-weight: $font-weight-medium; // 500
+  cursor: pointer;
+  transition: all $transition-base;
+  user-select: none;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// 卡片樣式
+@mixin card {
+  background: var(--theme-background-card);
+  border-radius: $border-radius;
+  padding: $spacing-md;
+  box-shadow: $shadow-md;
+}
+
+// 輸入框樣式 (匹配原始版本)
+@mixin input-base {
+  width: 100%;
+  padding: 10px; // 原始版本使用 10px
+  border: 1px solid var(--theme-border);
+  border-radius: $border-radius-small; // 原始版本使用 4px
+  font-size: $font-size-base; // 14px
+  color: var(--theme-text-primary);
+  background: var(--theme-background);
+  transition: all $transition-base;
+
+  &:focus {
+    outline: none;
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 2px var(--theme-active); // 原始版本使用 2px
+  }
+
+  &::placeholder {
+    color: var(--theme-text-muted);
+  }
+}
+
+// 滾動條樣式
+@mixin custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: var(--theme-background-secondary);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--theme-border);
+    border-radius: 4px;
+    
+    &:hover {
+      background: var(--theme-text-muted);
+    }
+  }
+}
+
+// 響應式斷點
+@mixin mobile {
+  @media (max-width: 480px) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (max-width: 768px) {
+    @content;
+  }
+}
+
+// 主題變數應用
+@mixin theme-colors($theme) {
+  @if $theme == 'light' {
+    --theme-primary: #{$light-primary};
+    --theme-primary-gradient: #{$light-primary-gradient};
+    --theme-background: #{$light-background};
+    --theme-background-secondary: #{$light-background-secondary};
+    --theme-background-card: #{$light-background-card};
+    --theme-text-primary: #{$light-text-primary};
+    --theme-text-secondary: #{$light-text-secondary};
+    --theme-text-muted: #{$light-text-muted};
+    --theme-text-inverse: #{$light-text-inverse};
+    --theme-border: #{$light-border};
+    --theme-border-light: #{$light-border-light};
+  } @else if $theme == 'dark' {
+    --theme-primary: #{$dark-primary};
+    --theme-primary-gradient: #{$dark-primary-gradient};
+    --theme-background: #{$dark-background};
+    --theme-background-secondary: #{$dark-background-secondary};
+    --theme-background-card: #{$dark-background-card};
+    --theme-text-primary: #{$dark-text-primary};
+    --theme-text-secondary: #{$dark-text-secondary};
+    --theme-text-muted: #{$dark-text-muted};
+    --theme-text-inverse: #{$dark-text-inverse};
+    --theme-border: #{$dark-border};
+    --theme-border-light: #{$dark-border-light};
+  } @else if $theme == 'morandi' {
+    --theme-primary: #{$morandi-primary};
+    --theme-primary-gradient: #{$morandi-primary-gradient};
+    --theme-background: #{$morandi-background};
+    --theme-background-secondary: #{$morandi-background-secondary};
+    --theme-background-card: #{$morandi-background-card};
+    --theme-text-primary: #{$morandi-text-primary};
+    --theme-text-secondary: #{$morandi-text-secondary};
+    --theme-text-muted: #{$morandi-text-muted};
+    --theme-text-inverse: #{$morandi-text-inverse};
+    --theme-border: #{$morandi-border};
+    --theme-border-light: #{$morandi-border-light};
+  }
+}
+
