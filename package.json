@@ -1,0 +1,49 @@
+{
+  "name": "gigabyte-attendance-tracker",
+  "version": "2.0.0",
+  "description": "技嘉出勤時間追蹤器 - Vue 3 + TypeScript 重構版",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:extension": "npm run build && vite build --watch",
+    "build": "vue-tsc && npm run build:background && npm run build:popup && npm run post-build",
+    "build:popup": "vite build",
+    "build:background": "vite build --config vite.config.background.ts",
+    "post-build": "node scripts/post-build.js",
+    "preview": "vite preview",
+    "type-check": "vue-tsc --noEmit",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
+  },
+  "dependencies": {
+    "pinia": "^2.1.7",
+    "vue": "^3.4.21",
+    "vue-i18n": "^9.10.2",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.260",
+    "@types/node": "^20.11.25",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "@vue/tsconfig": "^0.5.1",
+    "sass": "^1.71.1",
+    "terser": "^5.44.1",
+    "typescript": "^5.4.2",
+    "vite": "^5.1.5",
+    "vite-plugin-web-extension": "^4.1.1",
+    "vue-tsc": "^2.0.6"
+  },
+  "author": "Jake Chu",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jakeuj/edge-extension.git"
+  },
+  "keywords": [
+    "chrome-extension",
+    "edge-extension",
+    "attendance-tracker",
+    "vue3",
+    "typescript",
+    "gigabyte"
+  ]
+}
