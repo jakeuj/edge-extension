@@ -1071,15 +1071,32 @@ body {
 .leave-time-ranges {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-top: 4px;
+    gap: 6px;
+    margin-top: 8px;
+    padding-left: 4px;
 }
 
 .leave-time-range-item {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 2px 0;
+    padding: 4px 6px;
+    background: rgba(255, 193, 7, 0.05);
+    border-radius: 3px;
+    border-left: 2px solid var(--theme-warning);
+}
+
+.leave-segment-label {
+    font-size: 11px;
+    color: var(--theme-textSecondary);
+    font-weight: 500;
+    min-width: 60px;
+}
+
+.leave-segment-duration {
+    font-size: 11px;
+    color: var(--theme-textMuted);
+    font-weight: 500;
 }
 
 .range-label {
@@ -1095,9 +1112,13 @@ body {
     align-items: center;
     gap: 6px;
     margin-top: 6px;
-    padding: 4px 8px;
+    padding: 6px 8px;
     border-radius: 3px;
     font-size: 12px;
+    background: rgba(23, 162, 184, 0.1);
+    border-left: 2px solid var(--theme-info);
+    color: var(--theme-info);
+    font-weight: 500;
     background: rgba(33, 150, 243, 0.1);
     border-left: 2px solid var(--theme-info);
 }

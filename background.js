@@ -1,15 +1,102 @@
 // 背景服務工作者 - 處理擴充套件的背景任務
 
+// Service Worker 初始化保護旗標
+let isInitialized = false;
+
 // 安裝時的初始化
-chrome.runtime.onInstalled.addListener(() => {
-    
-    // 設定預設值
-    chrome.storage.local.set({
-        isLoggedIn: false,
-        serverKey: null,
-        lastLoginTime: null,
-        attendanceData: null
-    });
+chrome.runtime.onInstalled.addListener(async (details) => {
+    // 防止重複初始化
+    if (isInitialized && details.reason !== 'install') {
+        console.log('Service Worker 已初始化，跳過重複初始化');
+        return;
+    }
+
+    console.log('擴充套件安裝/更新事件:', details.reason);
+
+    if (details.reason === 'install') {
+        // 首次安裝：設定所有預設值
+        console.log('首次安裝，初始化預設值');
+        await chrome.storage.local.set({
+            isLoggedIn: false,
+            serverKey: null,
+            lastLoginTime: null,
+            attendanceData: null
+        });
+        isInitialized = true;
+    } else if (details.reason === 'update') {
+        // 更新：只重置登入狀態，不觸碰憑證
+        console.log('擴充套件更新，重置登入狀態但保留憑證');
+
+        // 只重置登入相關狀態，不設定憑證相關欄位
+        // 這樣可以避免覆寫現有的 savedAccount, savedPassword, hasCredentials
+        await chrome.storage.local.set({
+            isLoggedIn: false,
+            serverKey: null,
+            lastLoginTime: null,
+            attendanceData: null
+        });
+
+        // 驗證憑證是否仍然存在
+        const credentialCheck = await chrome.storage.local.get([
+            'savedAccount',
+            'savedPassword',
+            'hasCredentials'
+        ]);
+
+        console.log('更新後憑證狀態:', {
+            hasAccount: !!credentialCheck.savedAccount,
+            hasPassword: !!credentialCheck.savedPassword,
+            hasCredentials: credentialCheck.hasCredentials
+        });
+
+        isInitialized = true;
+    }
+});
+
+// 監聽 Storage 變更以追蹤憑證修改（用於除錯）
+chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === 'local') {
+        // 追蹤憑證相關欄位的變更
+        const credentialFields = ['savedAccount', 'savedPassword', 'hasCredentials'];
+        const credentialChanges = {};
+        let hasCredentialChange = false;
+
+        for (const field of credentialFields) {
+            if (changes[field]) {
+                credentialChanges[field] = {
+                    oldValue: changes[field].oldValue,
+                    newValue: changes[field].newValue
+                };
+                hasCredentialChange = true;
+            }
+        }
+
+        if (hasCredentialChange) {
+            console.warn('🔐 憑證變更偵測:', {
+                changes: credentialChanges,
+                timestamp: new Date().toISOString(),
+                // 記錄呼叫堆疊以追蹤變更來源
+                trace: new Error().stack
+            });
+
+            // 特別警告：如果憑證被清除
+            if (changes.savedPassword &&
+                changes.savedPassword.oldValue &&
+                !changes.savedPassword.newValue) {
+                console.error('⚠️ 警告：密碼已被清除！', {
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            if (changes.hasCredentials &&
+                changes.hasCredentials.oldValue === true &&
+                changes.hasCredentials.newValue === false) {
+                console.error('⚠️ 警告：憑證標記已被清除！', {
+                    timestamp: new Date().toISOString()
+                });
+            }
+        }
+    }
 });
 
 // 處理來自 popup 的訊息
@@ -20,7 +107,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 .then(result => sendResponse(result))
                 .catch(error => sendResponse({ success: false, error: error.message }));
             return true; // 保持訊息通道開啟以進行異步回應
-            
+
         case 'getAttendance':
             handleGetAttendance(request.serverKey)
                 .then(result => sendResponse(result))
@@ -59,38 +146,40 @@ async function handleLogin(credentials) {
         });
 
         const data = await response.json();
-        
+
         if (data.statusCode === 200 && data.result && data.result.serverKey) {
-            // 儲存登入資訊
-            const loginData = {
+            // 先儲存登入狀態
+            await chrome.storage.local.set({
                 isLoggedIn: true,
                 serverKey: data.result.serverKey,
                 lastLoginTime: Date.now()
-            };
-            
-            if (credentials.remember) {
-                loginData.savedAccount = credentials.account;
-                loginData.savedPassword = credentials.encryptedPassword; // 儲存加密後的密碼
-                loginData.hasCredentials = true;
+            });
+
+            // 如果需要記住密碼，分開儲存憑證（避免覆蓋其他值）
+            if (credentials.remember && credentials.encryptedPassword) {
+                await chrome.storage.local.set({
+                    savedAccount: credentials.account,
+                    savedPassword: credentials.encryptedPassword,
+                    hasCredentials: true
+                });
+                console.log('✓ 憑證已安全儲存');
             }
 
-            await chrome.storage.local.set(loginData);
-            
-            return { 
-                success: true, 
+            return {
+                success: true,
                 serverKey: data.result.serverKey,
                 message: '登入成功'
             };
         } else {
-            return { 
-                success: false, 
+            return {
+                success: false,
                 error: data.message || '登入失敗，請檢查帳號密碼'
             };
         }
     } catch (error) {
         console.error('登入錯誤:', error);
-        return { 
-            success: false, 
+        return {
+            success: false,
             error: '網路連線錯誤，請稍後再試'
         };
     }
@@ -289,6 +378,35 @@ setInterval(async () => {
         }
     }
 }, 60 * 60 * 1000); // 每小時檢查一次
+
+// Service Worker 啟動時驗證憑證完整性
+async function verifyCredentialsOnStartup() {
+    try {
+        const data = await chrome.storage.local.get([
+            'savedAccount',
+            'savedPassword',
+            'hasCredentials'
+        ]);
+
+        console.log('🔍 Service Worker 啟動 - 憑證狀態檢查:', {
+            hasAccount: !!data.savedAccount,
+            hasPassword: !!data.savedPassword,
+            hasCredentials: data.hasCredentials,
+            timestamp: new Date().toISOString()
+        });
+
+        // 如果標記為有憑證但實際資料遺失，修正標記
+        if (data.hasCredentials && (!data.savedAccount || !data.savedPassword)) {
+            console.warn('⚠️ 偵測到憑證不一致，修正 hasCredentials 標記');
+            await chrome.storage.local.set({ hasCredentials: false });
+        }
+    } catch (error) {
+        console.error('憑證驗證失敗:', error);
+    }
+}
+
+// Service Worker 啟動時執行驗證
+verifyCredentialsOnStartup();
 
 // 匯出函數供其他模組使用
 if (typeof module !== 'undefined' && module.exports) {

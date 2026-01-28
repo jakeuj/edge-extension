@@ -223,8 +223,8 @@ class ApiManager {
                             holidayPunchIn: employee.holidayPunchIn,
                             holidayPunchOut: employee.holidayPunchOut,
                             deptName: dept.deptName,
-                            // 計算工作時間
-                            workHours: this.calculateWorkHours(employee.punchIn, employee.punchOut),
+                            // 計算工作時間（使用 leaveTime 而非 punchOut）
+                            workHours: this.calculateWorkHours(employee.punchIn, employee.leaveTime),
                             // 格式化日期用於排序
                             sortDate: this.parseRecordDate(employee.date)
                         };
@@ -290,15 +290,15 @@ class ApiManager {
         return abnormalRecords;
     }
 
-    // 計算工作時間
-    calculateWorkHours(punchIn, punchOut) {
-        if (!punchIn || !punchOut || punchIn === '--:--' || punchOut === '--:--') {
+    // 計算工作時間（使用實際離開時間）
+    calculateWorkHours(punchIn, leaveTime) {
+        if (!punchIn || !leaveTime || punchIn === '--:--' || leaveTime === '--:--') {
             return '--:--';
         }
 
         try {
             const inMinutes = this.parseTimeToMinutes(punchIn);
-            const outMinutes = this.parseTimeToMinutes(punchOut);
+            const outMinutes = this.parseTimeToMinutes(leaveTime);
 
             if (inMinutes !== null && outMinutes !== null && outMinutes > inMinutes) {
                 const workMinutes = outMinutes - inMinutes;
