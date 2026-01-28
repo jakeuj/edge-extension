@@ -51,7 +51,8 @@ class PopupManager {
                 await this.loadAllData();
                 this.startAutoRefresh();
             } else {
-                await this.showLoginSection();
+                // 初始化時載入已儲存的密碼
+                await this.showLoginSection(false, true);
             }
             
             this.isInitialized = true;
@@ -344,9 +345,9 @@ class PopupManager {
                 // 更新上班時間
                 const clockInTime = window.apiManager.formatTime(attendanceData.punchIn);
                 this.updateElement('clockInTime', clockInTime);
-                
-                // 更新下班時間
-                const clockOutTime = window.apiManager.formatTime(attendanceData.punchOut);
+
+                // 更新下班時間（使用 leaveTime 而非 punchOut）
+                const clockOutTime = window.apiManager.formatTime(attendanceData.leaveTime);
                 this.updateElement('clockOutTime', clockOutTime);
                 
                 // 計算並更新預計下班時間
@@ -608,10 +609,10 @@ class PopupManager {
 
         let html = '';
         abnormalData.forEach(record => {
-            // 計算請假策略
+            // 計算請假策略（使用 leaveTime 而非 punchOut）
             const punchIn = window.apiManager.formatTime(record.punchIn);
-            const punchOut = window.apiManager.formatTime(record.punchOut);
-            const leaveStrategy = window.timeCalculator.calculateLeaveStrategy(punchIn, punchOut);
+            const leaveTime = window.apiManager.formatTime(record.leaveTime);
+            const leaveStrategy = window.timeCalculator.calculateLeaveStrategy(punchIn, leaveTime);
 
             // 建立請假策略顯示區塊
             let leaveStrategyHtml = '';
@@ -634,14 +635,64 @@ class PopupManager {
                     `;
                 }
 
-                leaveStrategyHtml = `
-                    <div class="leave-strategy">
+                // 建立請假時段顯示
+                let leaveTimeRangesHtml = '';
+                if (leaveStrategy.leaveSegments && leaveStrategy.leaveSegments.length > 0) {
+                    // 使用新的 leaveSegments 格式（支援多時段）
+                    if (leaveStrategy.leaveSegments.length === 1) {
+                        // 單一時段
+                        const segment = leaveStrategy.leaveSegments[0];
+                        leaveTimeRangesHtml = `
+                            <div class="leave-info">
+                                <span class="leave-label">💡 建議請假:</span>
+                                <span class="leave-time-range">${segment.startTime} - ${segment.endTime}</span>
+                                <span class="leave-duration">(${segment.hours} 小時)</span>
+                            </div>
+                        `;
+                    } else {
+                        // 多時段（遲到 + 早退）
+                        leaveTimeRangesHtml = `
+                            <div class="leave-info">
+                                <span class="leave-label">💡 建議請假:</span>
+                                <span class="leave-duration">(共 ${leaveStrategy.totalLeaveHours} 小時)</span>
+                            </div>
+                            <div class="leave-time-ranges">
+                                ${leaveStrategy.leaveSegments.map((segment, index) => `
+                                    <div class="leave-time-range-item">
+                                        <span class="leave-segment-label">${segment.reason}:</span>
+                                        <span class="leave-time-range">${segment.startTime} - ${segment.endTime}</span>
+                                        <span class="leave-segment-duration">(${segment.hours} 小時)</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                } else {
+                    // 向後相容：使用舊格式
+                    leaveTimeRangesHtml = `
                         <div class="leave-info">
                             <span class="leave-label">💡 建議請假:</span>
                             <span class="leave-time-range">${leaveStrategy.leaveStartTime} - ${leaveStrategy.leaveEndTime}</span>
                             <span class="leave-duration">(${leaveStrategy.leaveHours} 小時)</span>
                         </div>
+                    `;
+                }
+
+                // 行為建議
+                let behaviorSuggestionHtml = '';
+                if (leaveStrategy.behaviorSuggestion) {
+                    behaviorSuggestionHtml = `
+                        <div class="behavior-suggestion">
+                            ${leaveStrategy.behaviorSuggestion}
+                        </div>
+                    `;
+                }
+
+                leaveStrategyHtml = `
+                    <div class="leave-strategy">
+                        ${leaveTimeRangesHtml}
                         ${efficiencyHint}
+                        ${behaviorSuggestionHtml}
                     </div>
                 `;
             }
@@ -657,7 +708,7 @@ class PopupManager {
                             <span class="time-label">上班:</span>
                             <span class="time-value">${punchIn}</span>
                             <span class="time-label">下班:</span>
-                            <span class="time-value">${punchOut}</span>
+                            <span class="time-value">${leaveTime}</span>
                         </div>
                         <div class="work-hours">
                             <span class="work-hours-label">工作時間:</span>
@@ -698,7 +749,7 @@ class PopupManager {
     }
 
     // 顯示登入區域
-    async showLoginSection(clearPassword = false) {
+    async showLoginSection(clearPassword = false, loadSavedPassword = false) {
         this.hideElement('attendanceSection');
         this.hideElement('settingsSection');
         this.showElement('loginSection');
@@ -712,16 +763,18 @@ class PopupManager {
         // 載入儲存的帳號
         await this.loadSavedAccount();
 
-        // 根據參數決定是否清空密碼欄位
+        // 根據參數決定密碼欄位的處理方式
         if (clearPassword) {
+            // 明確要求清空密碼
             const passwordInput = document.getElementById('password');
             if (passwordInput) {
                 passwordInput.value = '';
             }
-        } else {
-            // 如果不清空密碼，則嘗試載入已儲存的密碼
+        } else if (loadSavedPassword) {
+            // 明確要求載入已儲存的密碼（僅在初始化時）
             await this.loadSavedPassword();
         }
+        // 否則保持密碼欄位的當前值不變
     }
 
     // 顯示出勤區域
@@ -978,7 +1031,8 @@ class PopupManager {
             if (isLoggedIn) {
                 await this.showAttendanceSection();
             } else {
-                await this.showLoginSection();
+                // 從設定返回時保留密碼欄位的當前值
+                await this.showLoginSection(false, false);
             }
         } catch (error) {
             console.error('返回主頁面失敗:', error);

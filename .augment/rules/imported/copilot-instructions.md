@@ -10,15 +10,17 @@ type: "manual"
 - **優先實用性**：以快速交付可用功能為目標，避免不必要的抽象化或複雜化
 
 ## 專案概述
-為技嘉員工開發的生產就緒 Microsoft Edge 擴充功能，用於追蹤出勤時間並計算彈性工作時間完成度。具備完整的模組化架構，包含彈出視窗 UI、背景服務工作者和全面的測試框架。
+為技嘉員工開發的生產就緒 Microsoft Edge 擴充功能，用於追蹤出勤時間並計算彈性工作時間完成度。具備完整的模組化架構，包含彈出視窗 UI、背景服務工作者、主題管理系統和加密儲存功能。
 
 ## 核心架構與模組系統
-- **模組化設計**：五個核心模組，各有特定職責
+- **模組化設計**：七個核心模組，各有特定職責
   - `PopupManager` (popup.js) - 主控制器和 UI 編排
   - `AuthManager` (auth.js) - 身份驗證和會話管理
   - `ApiManager` (api.js) - EIP 系統整合和資料解析
   - `TimeCalculator` (timeCalculator.js) - 彈性工作時間計算
   - `StorageManager` (storage.js) - Chrome Storage API 抽象層
+  - `ThemeManager` (themeManager.js) - 主題管理和切換（支援 light、dark、morandi 三種主題）
+  - `Crypto` (crypto.js) - 密碼加密和解密功能
 - **背景工作者**：使用服務工作者模式，透過訊息傳遞進行 API 呼叫
 - **非同步模組載入**：模組使用 `waitForModules()` 模式等待相依性
 
@@ -57,9 +59,23 @@ chrome.runtime.sendMessage({
 ## 檔案組織與職責
 - **`manifest.json`**：擴充功能設定，包含 EIP 網域權限
 - **`popup.html` + `styles/popup.css`**：乾淨的 UI，具有狀態指示器和表單區塊
-- **`background.js`**：處理所有網路請求，實作 8 小時後自動登出
+- **`background.js`**：處理所有網路請求
+- **`scripts/`**：核心 JavaScript 模組目錄
+  - `popup.js` - 主控制器
+  - `auth.js` - 認證管理
+  - `api.js` - API 呼叫
+  - `storage.js` - 資料儲存
+  - `timeCalculator.js` - 時間計算
+  - `themeManager.js` - 主題管理
+  - `crypto.js` - 加密功能
+- **`lib/`**：第三方函式庫
+  - `flip.min.js` + `flip.min.css` - 翻頁時鐘動畫效果
 - **`index.html`**：GitHub Pages 登陸頁面，包含完整文件
-- **`tools/generate-icons.html`**：SVG 轉 PNG 圖示產生工具
+- **`tools/`**：開發工具目錄
+  - `generate-icons.html` - SVG 轉 PNG 圖示產生工具
+  - `generate-custom-icons.html` - 自訂圖示產生器
+  - `quick-icon-converter.html` - 快速圖示轉換工具
+- **`dev-config.example.js`**：開發環境配置範例檔案
 
 ## 資料流與狀態管理
 1. **登入流程**：彈出視窗 → 背景工作者 → EIP 驗證 → Chrome 儲存
@@ -67,9 +83,23 @@ chrome.runtime.sendMessage({
 3. **出勤解析**：從 `parseTodayAttendance()` 的部門階層中提取今日資料
 4. **儲存模式**：使用 Chrome Storage Local 搭配結構化鍵值（`isLoggedIn`、`serverKey`、`attendanceData`）
 
+## 主題管理系統
+- **支援主題**：light（淺色）、dark（深色）、morandi（莫蘭迪色系）
+- **主題切換**：透過 ThemeManager 模組管理主題狀態和切換
+- **持久化儲存**：主題偏好設定儲存於 Chrome Storage
+- **即時套用**：主題變更即時反映於 UI，無需重新載入
+
+## 加密與安全功能
+- **密碼加密**：使用 Crypto 模組對儲存的密碼進行加密
+- **記住密碼**：支援安全地儲存加密後的登入憑證
+- **登入狀態持久化**：使用者登入後狀態持續保持，直到使用者主動點擊登出按鈕
+- **serverKey 管理**：安全管理 EIP 系統的 session key，持久化儲存不會因時間經過而失效
+- **憑證儲存**：登入憑證和 serverKey 持久化儲存於 Chrome Storage，不應因時間經過而被清除
+
 ## 品質保證
 - **邊界情況處理**：處理缺少打卡時間、不同時間格式、網路故障
 - **驗證機制**：帳號格式驗證、serverKey 過期、API 回應驗證
+- **控制台測試**：可在瀏覽器控制台執行模組測試函數
 - **注意**：除非用戶明確要求，否則不建立測試檔案或測試相關程式碼
 
 ## 部署與發佈
@@ -82,4 +112,3 @@ chrome.runtime.sendMessage({
 - **中文本地化**：所有 UI 文字使用繁體中文，日期格式包含星期名稱
 - **網域需求**：強制使用 Windows 網域身份驗證（`gigabyte\\username`）
 - **時區**：全程假設為台灣標準時間（UTC+8）
-- **會話管理**：為符合安全規範，8 小時後自動登出
