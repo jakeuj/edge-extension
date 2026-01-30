@@ -238,9 +238,11 @@ class PopupManager {
 
                 // 檢查是否有勾選「記住登入資訊」
                 const rememberCheckbox = document.getElementById('remember');
-                const shouldClearCredentials = rememberCheckbox ? !rememberCheckbox.checked : false;
+                // 邏輯：只有當使用者勾選了「記住登入資訊」時，才保留密碼
+                // 否則登出時清除密碼
+                const shouldClearCredentials = !(rememberCheckbox && rememberCheckbox.checked);
 
-                // 登出時，如果有勾選記住登入資訊，則不清除憑證
+                // 登出時，根據「記住登入資訊」的狀態決定是否清除憑證
                 const result = await window.authManager.logout(shouldClearCredentials);
 
                 if (result.success) {
@@ -819,6 +821,13 @@ class PopupManager {
                 return;
             }
 
+            // 先驗證憑證完整性
+            const integrityCheck = await window.cryptoManager.verifyCredentialsIntegrity();
+            if (!integrityCheck) {
+                console.log('憑證完整性檢查失敗，無法載入密碼');
+                return;
+            }
+
             // 讀取儲存的憑證
             const credentialsResult = await window.cryptoManager.loadCredentials();
 
@@ -835,9 +844,9 @@ class PopupManager {
                     rememberCheckbox.checked = true;
                 }
 
-                console.log('已載入儲存的密碼');
+                console.log('✅ 已載入儲存的密碼');
             } else {
-                console.log('無儲存的密碼可載入');
+                console.log('ℹ️ 無儲存的密碼可載入');
             }
         } catch (error) {
             console.error('載入儲存密碼錯誤:', error);
@@ -848,17 +857,13 @@ class PopupManager {
     async handleRememberCheckboxChange(isChecked) {
         try {
             if (!isChecked) {
-                // 取消勾選時，清除已儲存的憑證
-                if (window.cryptoManager) {
-                    await window.cryptoManager.clearCredentials();
-                    console.log('已清除儲存的憑證');
-
-                    // 同時清空密碼輸入框
-                    const passwordInput = document.getElementById('password');
-                    if (passwordInput) {
-                        passwordInput.value = '';
-                    }
+                // 取消勾選時，只清空密碼輸入框，不清除已儲存的憑證
+                // 憑證應該只在使用者明確登出時才清除
+                const passwordInput = document.getElementById('password');
+                if (passwordInput) {
+                    passwordInput.value = '';
                 }
+                console.log('已清空密碼輸入框，但保留儲存的憑證');
             }
         } catch (error) {
             console.error('處理記住登入資訊變更錯誤:', error);

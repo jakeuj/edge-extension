@@ -1,5 +1,60 @@
 # 變更日誌 (Changelog)
 
+## [1.1.1] - 2026-01-30
+
+### 🔐 重要修復 (Critical Fix)
+- **修復密碼儲存問題**
+  - 🐛 修復 `handleRememberCheckboxChange()` 過於激進的邏輯
+  - 🐛 修復 `handleLogout()` 邏輯反向的問題
+  - 🐛 修復 Service Worker 驗證過於嚴格的邏輯
+  - 🐛 新增憑證完整性檢查機制
+
+### 新增功能 (Added)
+- ✅ **憑證完整性檢查方法**
+  - 新增 `verifyCredentialsIntegrity()` 方法
+  - 自動偵測和修正不完整的憑證
+  - 確保密碼完整儲存和載入
+
+### 改進功能 (Improved)
+- 🔧 **登入流程優化**
+  - 取消勾選「記住登入資訊」時只清空輸入框，不清除儲存的憑證
+  - 登出時根據「記住」狀態正確決定是否清除密碼
+  - 自動登入前驗證憑證完整性
+
+- 📝 **除錯資訊增強**
+  - 新增詳細的 console 訊息記錄
+  - 使用表情符號標記不同類型的訊息
+  - 便於追蹤和除錯
+
+### 技術改進 (Technical)
+- 🏗️ **Service Worker 驗證重構**
+  - 改進 `verifyCredentialsOnStartup()` 邏輯
+  - 只在確實遺失時才修正標記
+  - 新增成功驗證的確認訊息
+
+- 🔒 **密碼載入機制改善**
+  - `loadSavedPassword()` 先驗證完整性再載入
+  - `attemptAutoRelogin()` 先驗證完整性再自動登入
+  - 確保密碼載入的可靠性
+
+### 修復問題 (Fixed)
+- 🐛 修復取消勾選「記住登入資訊」時密碼被誤清除的問題
+- 🐛 修復登出時邏輯反向導致密碼被誤清除的問題
+- 🐛 修復 Service Worker 重啟時憑證標記被誤清除的問題
+- 🐛 修復無法偵測不完整憑證的問題
+
+### 文件變更 (Files Changed)
+- `scripts/popup.js` - 修復 2 個邏輯缺陷，新增完整性檢查
+- `scripts/auth.js` - 改進自動登入流程
+- `scripts/crypto.js` - 新增完整性檢查方法
+- `background.js` - 改進 Service Worker 驗證邏輯
+- `manifest.json` - 版本號更新至 1.1.1
+
+### 已知問題 (Known Issues)
+- 無
+
+---
+
 ## [1.3.1] - 2025-12-30
 
 ### 🔐 重要修復 (Critical Fix)
