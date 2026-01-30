@@ -395,10 +395,19 @@ async function verifyCredentialsOnStartup() {
             timestamp: new Date().toISOString()
         });
 
-        // 如果標記為有憑證但實際資料遺失，修正標記
-        if (data.hasCredentials && (!data.savedAccount || !data.savedPassword)) {
-            console.warn('⚠️ 偵測到憑證不一致，修正 hasCredentials 標記');
-            await chrome.storage.local.set({ hasCredentials: false });
+        // 如果標記為有憑證，驗證實際資料是否完整
+        if (data.hasCredentials === true) {
+            // 檢查是否真的遺失了憑證
+            if (!data.savedAccount || !data.savedPassword) {
+                console.warn('⚠️ 偵測到憑證不一致，修正 hasCredentials 標記');
+                await chrome.storage.local.set({ hasCredentials: false });
+            } else {
+                // 憑證完整，記錄確認訊息
+                console.log('✅ 憑證驗證通過，可以使用自動登入');
+            }
+        } else if (data.hasCredentials === false) {
+            // 明確標記為無憑證，記錄狀態
+            console.log('ℹ️ 無儲存的憑證');
         }
     } catch (error) {
         console.error('憑證驗證失敗:', error);

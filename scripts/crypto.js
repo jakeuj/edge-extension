@@ -237,6 +237,42 @@ class CryptoManager {
             return false;
         }
     }
+
+    // 驗證憑證完整性
+    async verifyCredentialsIntegrity() {
+        try {
+            const data = await chrome.storage.local.get([
+                'savedAccount',
+                'savedPassword',
+                'hasCredentials'
+            ]);
+
+            // 檢查所有必要欄位
+            const isValid = data.hasCredentials === true &&
+                           data.savedAccount &&
+                           typeof data.savedAccount === 'string' &&
+                           data.savedAccount.length > 0 &&
+                           data.savedPassword &&
+                           typeof data.savedPassword === 'string' &&
+                           data.savedPassword.length > 0;
+
+            if (!isValid) {
+                console.error('❌ 憑證完整性檢查失敗');
+                // 自動修正：清除不完整的憑證
+                if (data.hasCredentials === true) {
+                    console.warn('⚠️ 偵測到不完整的憑證，自動清除');
+                    await this.clearCredentials();
+                }
+                return false;
+            }
+
+            console.log('✅ 憑證完整性檢查通過');
+            return true;
+        } catch (error) {
+            console.error('憑證驗證錯誤:', error);
+            return false;
+        }
+    }
 }
 
 // 匯出加密管理器實例

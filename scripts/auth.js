@@ -277,37 +277,44 @@ class AuthManager {
     // 嘗試自動重新登入
     async attemptAutoRelogin() {
         try {
-            console.log('嘗試自動重新登入...');
+            console.log('🔄 嘗試自動重新登入...');
 
             // 檢查是否有加密管理器
             if (!window.cryptoManager) {
-                console.error('加密管理器未初始化');
+                console.error('❌ 加密管理器未初始化');
                 return { success: false, error: '加密管理器未初始化' };
+            }
+
+            // 先驗證憑證完整性
+            const integrityCheck = await window.cryptoManager.verifyCredentialsIntegrity();
+            if (!integrityCheck) {
+                console.error('❌ 憑證完整性檢查失敗，無法自動重新登入');
+                return { success: false, error: '憑證不完整' };
             }
 
             // 讀取儲存的憑證
             const credentialsResult = await window.cryptoManager.loadCredentials();
 
             if (!credentialsResult.success) {
-                console.log('無法讀取儲存的憑證:', credentialsResult.error);
+                console.log('❌ 無法讀取儲存的憑證:', credentialsResult.error);
                 return { success: false, error: '無儲存的憑證' };
             }
 
             const { account, password } = credentialsResult;
 
             // 使用儲存的憑證重新登入
-            console.log('使用儲存的憑證重新登入...');
+            console.log('🔐 使用儲存的憑證重新登入...');
             const loginResult = await this.login(account, password, true);
 
             if (loginResult.success) {
-                console.log('自動重新登入成功');
+                console.log('✅ 自動重新登入成功');
                 return { success: true, message: '自動重新登入成功' };
             } else {
-                console.error('自動重新登入失敗:', loginResult.error);
+                console.error('❌ 自動重新登入失敗:', loginResult.error);
                 return { success: false, error: loginResult.error };
             }
         } catch (error) {
-            console.error('自動重新登入錯誤:', error);
+            console.error('❌ 自動重新登入錯誤:', error);
             return { success: false, error: error.message };
         }
     }
